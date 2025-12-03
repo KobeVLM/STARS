@@ -43,6 +43,7 @@
                         <img src="{% static 'images/default-avatar.png' %}" class="avatar" alt="{{ user.username }}">
                     {% endif %}
                 </a>
+                <a href="{% url 'account_settings' %}" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Settings</a>
                 <form action="{% url 'logout' %}" method="POST" style="margin: 0; display: inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.9rem; cursor: pointer;">Logout</button>
