@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
+from django.contrib import messages
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm, ProfileEditForm
+from .forms import CustomUserCreationForm, ProfileEditForm, AccountSettingsForm
 from .models import CustomUser
 
 
@@ -14,7 +15,7 @@ def register(request):
             login(request, user)
             return redirect('welcome')
     else:
-        form = CustomUserCreationForm()
+        form = CustomUserCreationForm(request.POST)
     return render(request, 'users/register.html', {'form': form})
 
 
@@ -61,3 +62,48 @@ def profile_edit(request):
     else:
         form = ProfileEditForm(instance=request.user)
     return render(request, 'users/profile_edit.html', {'form': form})
+
+
+@login_required
+def account_settings(request):
+    """Account settings - update email, username, password"""
+    if request.method == 'POST':
+        form = AccountSettingsForm(request.user, request.POST)
+        if form.is_valid():
+            user = request.user
+            updated = False
+            
+            # Update email
+            new_email = form.cleaned_data.get('email')
+            if new_email and new_email != user.email:
+                user.email = new_email
+                updated = True
+                messages.success(request, 'Email updated successfully!')
+            
+            # Update username
+            new_username = form.cleaned_data.get('username')
+            if new_username and new_username != user.username:
+                user.username = new_username
+                updated = True
+                messages.success(request, 'Username updated successfully!')
+            
+            # Update password
+            new_password = form.cleaned_data.get('new_password')
+            if new_password:
+                user.set_password(new_password)
+                updated = True
+                messages.success(request, 'Password updated successfully! Please log in again.')
+                user.save()
+                # Log out user after password change
+                logout(request)
+                return redirect('login')
+            
+            if updated:
+                user.save()
+                return redirect('account_settings')
+            else:
+                messages.info(request, 'No changes were made.')
+    else:
+        form = AccountSettingsForm(request.user)
+    
+    return render(request, 'users/account_settings.html', {'form': form})

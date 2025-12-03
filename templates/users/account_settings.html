@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="margin-bottom: 30px;">Account Settings</h1>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div style="margin-bottom: 20px;">
+        {% for message in messages %}
+        <div style="padding: 15px; background: {% if message.tags == 'success' %}#d4edda{% elif message.tags == 'info' %}#d1ecf1{% else %}#f8d7da{% endif %}; color: {% if message.tags == 'success' %}#155724{% elif message.tags == 'info' %}#0c5460{% else %}#721c24{% endif %}; border-radius: 8px; margin-bottom: 10px;">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Form Errors -->
+    {% if form.non_field_errors %}
+    <div style="padding: 15px; background: #f8d7da; color: #721c24; border-radius: 8px; margin-bottom: 20px;">
+        {% for error in form.non_field_errors %}
+            <p style="margin: 0;">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card" style="padding: 40px;">
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Email Section -->
+            <div style="margin-bottom: 40px;">
+                <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-color);">Email Address</h2>
+                <div class="form-group">
+                    <label>{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <small style="color: #ff7675;">{{ form.email.errors.0 }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Username Section -->
+            <div style="margin-bottom: 40px;">
+                <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-color);">Username</h2>
+                <div class="form-group">
+                    <label>{{ form.username.label }}</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <small style="color: #ff7675;">{{ form.username.errors.0 }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Password Section -->
+            <div style="margin-bottom: 30px;">
+                <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-color);">Change Password</h2>
+                
+                <div class="form-group">
+                    <label>{{ form.current_password.label }}</label>
+                    {{ form.current_password }}
+                    {% if form.current_password.errors %}
+                        <small style="color: #ff7675;">{{ form.current_password.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>{{ form.new_password.label }}</label>
+                    {{ form.new_password }}
+                    {% if form.new_password.errors %}
+                        <small style="color: #ff7675;">{{ form.new_password.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>{{ form.confirm_password.label }}</label>
+                    {{ form.confirm_password }}
+                    {% if form.confirm_password.errors %}
+                        <small style="color: #ff7675;">{{ form.confirm_password.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <small style="color: var(--text-light); display: block; margin-top: 10px;">
+                    ℹ️ Leave password fields blank if you don't want to change your password.
+                </small>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 15px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+                <a href="{% url 'profile' username=user.username %}" class="btn btn-outline" style="flex: 1; text-align: center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
