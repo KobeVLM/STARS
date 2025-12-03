@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1>Admin Dashboard</h1>
+        <a href="{% url 'admin_users' %}" class="btn btn-primary">Manage Users</a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+        <div class="card" style="padding: 20px; text-align: center;">
+            <h3 style="color: var(--primary); font-size: 2.5rem; margin: 0;">{{ stats.total_users }}</h3>
+            <p style="color: var(--text-light); margin-top: 5px;">Total Users</p>
+        </div>
+        <div class="card" style="padding: 20px; text-align: center;">
+            <h3 style="color: var(--secondary); font-size: 2.5rem; margin: 0;">{{ stats.total_artworks }}</h3>
+            <p style="color: var(--text-light); margin-top: 5px;">Total Artworks</p>
+        </div>
+        <div class="card" style="padding: 20px; text-align: center;">
+            <h3 style="color: #ff7675; font-size: 2.5rem; margin: 0;">{{ stats.total_likes }}</h3>
+            <p style="color: var(--text-light); margin-top: 5px;">Total Likes</p>
+        </div>
+        <div class="card" style="padding: 20px; text-align: center;">
+            <h3 style="color: #fdcb6e; font-size: 2.5rem; margin: 0;">{{ stats.total_comments }}</h3>
+            <p style="color: var(--text-light); margin-top: 5px;">Total Comments</p>
+        </div>
+        <div class="card" style="padding: 20px; text-align: center;">
+            <h3 style="color: #00b894; font-size: 2.5rem; margin: 0;">{{ stats.active_users }}</h3>
+            <p style="color: var(--text-light); margin-top: 5px;">Active Users</p>
+        </div>
+        <div class="card" style="padding: 20px; text-align: center;">
+            <h3 style="color: #e17055; font-size: 2.5rem; margin: 0;">{{ stats.staff_users }}</h3>
+            <p style="color: var(--text-light); margin-top: 5px;">Staff Members</p>
+        </div>
+    </div>
+
+    <!-- Recent Users & Top Users -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <!-- Recent Users -->
+        <div class="card" style="padding: 30px;">
+            <h2 style="margin-bottom: 20px;">Recent Users</h2>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                {% for user in recent_users %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--bg-color); border-radius: 8px;">
+                    <div class="flex-row">
+                        <strong>{{ user.username }}</strong>
+                        <span class="level-badge" style="font-size: 0.75rem;">Lvl {{ user.level }}</span>
+                    </div>
+                    <small style="color: var(--text-light);">{{ user.date_joined|date:"M d, Y" }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Top Users by XP -->
+        <div class="card" style="padding: 30px;">
+            <h2 style="margin-bottom: 20px;">Top Users by XP</h2>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                {% for user in top_users %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--bg-color); border-radius: 8px;">
+                    <div class="flex-row">
+                        <strong>{{ user.username }}</strong>
+                        <span class="level-badge" style="font-size: 0.75rem;">Lvl {{ user.level }}</span>
+                    </div>
+                    <strong style="color: var(--secondary);">{{ user.xp }} XP</strong>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

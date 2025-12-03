@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Tag Filters -->
+<div class="flex-row" style="margin-bottom: 30px; overflow-x: auto; padding-bottom: 10px; flex-wrap: wrap;">
+    <a href="{% url 'feed' %}" class="tag-pill {% if not current_tag %}active{% endif %}">All Posts</a>
+    {% for tag in tags %}
+        <a href="?tag={{ tag.slug }}" class="tag-pill {% if current_tag == tag.slug %}active{% endif %}">{{ tag.name }}</a>
+    {% endfor %}
+</div>
+
+<!-- Artwork Grid -->
+{% if artworks %}
+<div class="grid-3">
+    {% for art in artworks %}
+    <div class="card">
+        <a href="{% url 'detail' pk=art.id %}">
+            <img src="{{ art.image.url }}" alt="{{ art.title }}">
+        </a>
+        <div class="card-content">
+            <h3 class="card-title">{{ art.title }}</h3>
+            <small class="card-meta">by <a href="{% url 'profile' username=art.artist.username %}" style="color: var(--primary); text-decoration: none;">{{ art.artist.username }}</a></small>
+            
+            <div class="flex-between" style="margin-top: 15px;">
+                <div class="tags">
+                    {% for tag in art.tags.all|slice:":3" %}
+                        <a href="?tag={{ tag.slug }}" class="tag-pill" style="font-size: 0.75rem; padding: 2px 8px;">#{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+                <!-- Like Count -->
+                <div class="flex-row" style="gap: 5px;">
+                    <span style="color: #ff7675;">♥</span> 
+                    <span>{{ art.likes.count }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style="text-align: center; padding: 60px 20px;">
+    <h2 style="color: var(--text-light);">No artwork found</h2>
+    <p style="margin-top: 10px;">{% if user.is_authenticated %}Be the first to <a href="{% url 'upload' %}">upload something</a>!{% else %}<a href="{% url 'register' %}">Sign up</a> to start sharing!{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}

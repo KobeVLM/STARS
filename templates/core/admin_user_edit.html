@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1>Edit User: {{ user_to_edit.username }}</h1>
+        <a href="{% url 'admin_users' %}" class="btn btn-outline">← Back to Users</a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div style="margin-bottom: 20px;">
+        {% for message in messages %}
+        <div style="padding: 15px; background: {% if message.tags == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if message.tags == 'success' %}#155724{% else %}#721c24{% endif %}; border-radius: 8px; margin-bottom: 10px;">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <!-- User Info & Actions -->
+        <div class="card" style="padding: 30px;">
+            <h2 style="margin-bottom: 20px;">User Information</h2>
+            
+            <!-- Avatar & Basic Info -->
+            <div style="text-align: center; margin-bottom: 30px;">
+                {% if user_to_edit.avatar %}
+                    <img src="{{ user_to_edit.avatar.url }}" alt="{{ user_to_edit.username }}" class="profile-avatar">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" alt="{{ user_to_edit.username }}" class="profile-avatar">
+                {% endif %}
+                <h3 style="margin-top: 15px;">{{ user_to_edit.username }}</h3>
+                <p style="color: var(--text-light);">{{ user_to_edit.email|default:"No email" }}</p>
+            </div>
+
+            <!-- User Stats -->
+            <div style="background: var(--bg-color); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px;">Statistics</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <strong>Level:</strong> {{ user_to_edit.level }}
+                    </div>
+                    <div>
+                        <strong>XP:</strong> {{ user_to_edit.xp }}
+                    </div>
+                    <div>
+                        <strong>Artworks:</strong> {{ user_stats.artworks }}
+                    </div>
+                    <div>
+                        <strong>Comments:</strong> {{ user_stats.comments }}
+                    </div>
+                    <div>
+                        <strong>Likes Given:</strong> {{ user_stats.likes_given }}
+                    </div>
+                    <div>
+                        <strong>Likes Received:</strong> {{ user_stats.likes_received }}
+                    </div>
+                    <div>
+                        <strong>Badges:</strong> {{ user_stats.badges }}
+                    </div>
+                    <div>
+                        <strong>Joined:</strong> {{ user_to_edit.date_joined|date:"M d, Y" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div>
+                <h3 style="margin-bottom: 15px;">Quick Actions</h3>
+                
+                <!-- Toggle Active Status -->
+                <form method="POST" style="margin-bottom: 10px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="toggle_active">
+                    <button type="submit" class="btn {% if user_to_edit.is_active %}btn-outline{% else %}btn-primary{% endif %}" style="width: 100%;">
+                        {% if user_to_edit.is_active %}
+                            Deactivate User
+                        {% else %}
+                            Activate User
+                        {% endif %}
+                    </button>
+                </form>
+
+                <!-- Toggle Staff Status -->
+                <form method="POST" style="margin-bottom: 10px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="toggle_staff">
+                    <button type="submit" class="btn btn-outline" style="width: 100%;">
+                        {% if user_to_edit.is_staff %}
+                            Revoke Staff Privileges
+                        {% else %}
+                            Grant Staff Privileges
+                        {% endif %}
+                    </button>
+                </form>
+
+                <!-- View Profile -->
+                <a href="{% url 'profile' username=user_to_edit.username %}" class="btn btn-outline" style="width: 100%; text-align: center; display: block;">
+                    View Public Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- Edit Forms -->
+        <div>
+            <!-- XP Adjustment -->
+            <div class="card" style="padding: 30px; margin-bottom: 20px;">
+                <h2 style="margin-bottom: 20px;">Adjust XP</h2>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="adjust_xp">
+                    <div class="form-group">
+                        <label>XP Amount (use negative to subtract)</label>
+                        <input type="number" name="xp_amount" class="form-input" placeholder="e.g., 100 or -50" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Apply XP Change</button>
+                </form>
+            </div>
+
+            <!-- Edit Bio -->
+            <div class="card" style="padding: 30px;">
+                <h2 style="margin-bottom: 20px;">Edit Bio</h2>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_bio">
+                    <div class="form-group">
+                        <label>Bio</label>
+                        <textarea name="bio" class="form-input" rows="6" placeholder="User bio...">{{ user_to_edit.bio }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Update Bio</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

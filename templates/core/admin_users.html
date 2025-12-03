@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1>User Management</h1>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">← Back to Dashboard</a>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="card" style="padding: 20px; margin-bottom: 30px;">
+        <form method="GET" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: end;">
+            <!-- Search -->
+            <div style="flex: 1; min-width: 250px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Search Users</label>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Username or email..." class="form-input">
+            </div>
+
+            <!-- Status Filter -->
+            <div style="min-width: 150px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Status</label>
+                <select name="status" class="form-input">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+
+            <!-- Role Filter -->
+            <div style="min-width: 150px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Role</label>
+                <select name="role" class="form-input">
+                    <option value="all" {% if role_filter == 'all' %}selected{% endif %}>All</option>
+                    <option value="staff" {% if role_filter == 'staff' %}selected{% endif %}>Staff</option>
+                    <option value="regular" {% if role_filter == 'regular' %}selected{% endif %}>Regular</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card" style="padding: 30px;">
+        <h2 style="margin-bottom: 20px;">All Users ({{ users.count }})</h2>
+        
+        {% if users %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--bg-color);">
+                        <th style="padding: 12px; text-align: left;">Username</th>
+                        <th style="padding: 12px; text-align: left;">Email</th>
+                        <th style="padding: 12px; text-align: center;">Level</th>
+                        <th style="padding: 12px; text-align: center;">XP</th>
+                        <th style="padding: 12px; text-align: center;">Artworks</th>
+                        <th style="padding: 12px; text-align: center;">Comments</th>
+                        <th style="padding: 12px; text-align: center;">Status</th>
+                        <th style="padding: 12px; text-align: center;">Role</th>
+                        <th style="padding: 12px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 12px;">
+                            <a href="{% url 'profile' username=user.username %}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                                {{ user.username }}
+                            </a>
+                        </td>
+                        <td style="padding: 12px; color: var(--text-light);">{{ user.email|default:"—" }}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span class="level-badge" style="font-size: 0.85rem;">{{ user.level }}</span>
+                        </td>
+                        <td style="padding: 12px; text-align: center; font-weight: 600;">{{ user.xp }}</td>
+                        <td style="padding: 12px; text-align: center;">{{ user.artwork_count }}</td>
+                        <td style="padding: 12px; text-align: center;">{{ user.comment_count }}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            {% if user.is_active %}
+                                <span style="color: #00b894; font-weight: 600;">✓ Active</span>
+                            {% else %}
+                                <span style="color: #ff7675; font-weight: 600;">✗ Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            {% if user.is_staff %}
+                                <span style="background: #e17055; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.85rem;">Staff</span>
+                            {% else %}
+                                <span style="color: var(--text-light);">User</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <a href="{% url 'admin_user_edit' user_id=user.id %}" class="btn btn-outline" style="padding: 5px 12px; font-size: 0.85rem;">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: var(--text-light); padding: 40px;">No users found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

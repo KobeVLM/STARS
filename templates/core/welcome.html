@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div style="text-align: center; max-width: 600px; margin: 100px auto;">
+    <h1 style="font-size: 2.5rem; color: var(--text-dark); margin-bottom: 20px;">Welcome aboard! You're in. 🎉</h1>
+    <p style="font-size: 1.2rem; color: var(--text-light); margin-bottom: 40px;">
+        STARS is your safe space to draw, share, and grow. Let's get you settled.
+    </p>
+    
+    <div class="card" style="padding: 40px;">
+        <div style="font-size: 4rem; margin-bottom: 20px;">⭐</div>
+        <h3 style="margin-bottom: 30px;">Ready to start your journey?</h3>
+        
+        <a href="{% url 'profile_edit' %}" class="btn btn-primary" style="display: block; width: 100%; margin-bottom: 15px; padding: 15px;">
+            Set Up Your Profile (+20 XP)
+        </a>
+        <a href="{% url 'feed' %}" style="color: var(--text-light); text-decoration: none;">
+            I'll do it later, take me to the Feed →
+        </a>
+    </div>
+</div>
+{% endblock %}

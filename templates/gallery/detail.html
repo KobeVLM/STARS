@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <!-- Artwork Display -->
+    <div class="card" style="margin-bottom: 30px;">
+        <img src="{{ artwork.image.url }}" alt="{{ artwork.title }}" style="width: 100%; height: auto; max-height: 600px; object-fit: contain;">
+        
+        <div style="padding: 30px;">
+            <div class="flex-between" style="margin-bottom: 20px;">
+                <div>
+                    <h1 style="margin-bottom: 10px;">{{ artwork.title }}</h1>
+                    <div class="flex-row">
+                        <a href="{% url 'profile' username=artwork.artist.username %}">
+                            {% if artwork.artist.avatar %}
+                                <img src="{{ artwork.artist.avatar.url }}" class="avatar" alt="{{ artwork.artist.username }}">
+                            {% else %}
+                                <img src="{% static 'images/default-avatar.png' %}" class="avatar" alt="{{ artwork.artist.username }}">
+                            {% endif %}
+                        </a>
+                        <div>
+                            <a href="{% url 'profile' username=artwork.artist.username %}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                                {{ artwork.artist.username }}
+                            </a>
+                            <div class="level-badge" style="display: inline-block; margin-left: 10px;">Lvl {{ artwork.artist.level }}</div>
+                            <br>
+                            <small style="color: var(--text-light);">{{ artwork.created_at|date:"F d, Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Like Button -->
+                {% if user.is_authenticated %}
+                <form action="{% url 'toggle_like' artwork_id=artwork.id %}" method="POST" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-like {% if user_has_liked %}liked{% endif %}" style="font-size: 2rem;">
+                        ♥ <span style="font-size: 1rem;">{{ artwork.likes.count }}</span>
+                    </button>
+                </form>
+                {% else %}
+                <div style="color: #ff7675; font-size: 2rem;">
+                    ♥ {{ artwork.likes.count }}
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if artwork.description %}
+            <p style="margin: 20px 0; line-height: 1.8;">{{ artwork.description }}</p>
+            {% endif %}
+            
+            <!-- Tags -->
+            {% if artwork.tags.all %}
+            <div style="margin-top: 20px;">
+                {% for tag in artwork.tags.all %}
+                    <a href="{% url 'feed' %}?tag={{ tag.slug }}" class="tag-pill">#{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Comments Section -->
+    <div class="card" style="margin-bottom: 30px;">
+        <div style="padding: 30px;">
+            <h2 style="margin-bottom: 20px;">Comments ({{ comments.count }})</h2>
+            
+            <!-- Comment Form -->
+            {% if user.is_authenticated %}
+            <form action="{% url 'add_comment' artwork_id=artwork.id %}" method="POST" style="margin-bottom: 30px;">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ comment_form.content }}
+                </div>
+                <button type="submit" class="btn btn-primary">Post Comment (+5 XP)</button>
+            </form>
+            {% else %}
+            <p style="color: var(--text-light); margin-bottom: 30px;">
+                <a href="{% url 'login' %}">Login</a> to leave a comment.
+            </p>
+            {% endif %}
+            
+            <!-- Comments List -->
+            {% if comments %}
+            <div style="border-top: 1px solid #eee; padding-top: 20px;">
+                {% for comment in comments %}
+                <div style="margin-bottom: 20px; padding-bottom: 20px; {% if not forloop.last %}border-bottom: 1px solid #f0f0f0;{% endif %}">
+                    <div class="flex-between" style="margin-bottom: 10px;">
+                        <div class="flex-row">
+                            <a href="{% url 'profile' username=comment.user.username %}">
+                                {% if comment.user.avatar %}
+                                    <img src="{{ comment.user.avatar.url }}" class="avatar" alt="{{ comment.user.username }}" style="width: 32px; height: 32px;">
+                                {% else %}
+                                    <img src="{% static 'images/default-avatar.png' %}" class="avatar" alt="{{ comment.user.username }}" style="width: 32px; height: 32px;">
+                                {% endif %}
+                            </a>
+                            <div>
+                                <a href="{% url 'profile' username=comment.user.username %}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                                    {{ comment.user.username }}
+                                </a>
+                                <div class="level-badge" style="display: inline-block; margin-left: 8px; font-size: 0.75rem;">Lvl {{ comment.user.level }}</div>
+                                <br>
+                                <small style="color: var(--text-light);">{{ comment.created_at|timesince }} ago</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Delete button for comment owner -->
+                        {% if user == comment.user %}
+                        <form action="{% url 'delete_comment' comment_id=comment.id %}" method="POST" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-outline" style="padding: 4px 12px; font-size: 0.85rem; border-color: #ff7675; color: #ff7675;" onclick="return confirm('Delete this comment?')">Delete</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    <p style="margin-left: 47px; line-height: 1.6;">{{ comment.content }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color: var(--text-light); text-align: center; padding: 20px;">No comments yet. Be the first to share your thoughts!</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div style="text-align: center;">
+        <a href="{% url 'feed' %}" class="btn btn-outline">← Back to Gallery</a>
+    </div>
+</div>
+{% endblock %}

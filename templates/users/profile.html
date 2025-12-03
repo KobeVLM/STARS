@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Profile Header -->
+<div class="profile-header">
+    <div>
+        {% if profile_user.avatar %}
+            <img src="{{ profile_user.avatar.url }}" class="profile-avatar" alt="{{ profile_user.username }}">
+        {% else %}
+            <img src="{% static 'images/default-avatar.png' %}" class="profile-avatar" alt="{{ profile_user.username }}">
+        {% endif %}
+    </div>
+    <div class="profile-info" style="flex: 1;">
+        <h1>{{ profile_user.username }}</h1>
+        <div class="level-badge" style="display: inline-block;">Level {{ profile_user.level }}</div>
+        
+        <div style="margin: 20px 0;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div>
+                    <strong>{{ profile_user.xp }}</strong> XP
+                </div>
+                <div class="xp-bar-container" style="width: 200px;">
+                    <div class="xp-bar-fill" style="width: {{ xp_percentage }}%;"></div>
+                </div>
+                <small style="color: var(--text-light);">{{ xp_progress|floatformat:0 }} / {{ xp_needed }} to level {{ profile_user.level|add:1 }}</small>
+            </div>
+        </div>
+        
+        {% if profile_user.bio %}
+        <p class="profile-bio">{{ profile_user.bio }}</p>
+        {% endif %}
+        
+        <!-- Badges Section -->
+        {% if profile_user.earned_badges.all %}
+        <div style="margin: 20px 0;">
+            <strong style="display: block; margin-bottom: 10px;">Badges ({{ profile_user.earned_badges.count }})</strong>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                {% for user_badge in profile_user.earned_badges.all %}
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;" title="{{ user_badge.badge.description }}">
+                    <span style="font-size: 1.2rem;">{{ user_badge.badge.icon }}</span>
+                    <span>{{ user_badge.badge.name }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if user == profile_user %}
+        <a href="{% url 'profile_edit' %}" class="btn btn-outline" style="margin-top: 15px;">Edit Profile</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- User's Artworks -->
+<h2 style="margin-bottom: 20px;">Artworks ({{ artworks.count }})</h2>
+{% if artworks %}
+<div class="grid-3">
+    {% for art in artworks %}
+    <div class="card">
+        <a href="{% url 'detail' pk=art.id %}">
+            <img src="{{ art.image.url }}" alt="{{ art.title }}">
+        </a>
+        <div class="card-content">
+            <h3 class="card-title">{{ art.title }}</h3>
+            <small class="card-meta">{{ art.created_at|date:"M d, Y" }}</small>
+            
+            <div class="flex-between" style="margin-top: 15px;">
+                <div class="tags">
+                    {% for tag in art.tags.all|slice:":2" %}
+                        <span class="tag-pill" style="font-size: 0.75rem; padding: 2px 8px;">#{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                <div style="color: #ff7675;">
+                    ♥ {{ art.likes.count }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style="text-align: center; padding: 60px 20px; background: var(--card-bg); border-radius: var(--border-radius);">
+    <p style="color: var(--text-light);">No artworks yet. {% if user == profile_user %}<a href="{% url 'upload' %}">Upload your first piece!</a>{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}
