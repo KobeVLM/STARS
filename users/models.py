@@ -1,3 +1,4 @@
+import math
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -12,8 +13,15 @@ class CustomUser(AbstractUser):
     level = models.IntegerField(default=1)
 
     def calculate_level(self):
-        """Calculate level based on XP (100 XP per level)"""
-        return (self.xp // 100) + 1
+        """Calculate level based on XP using square root formula
+        
+        Formula: Level = sqrt(total_xp / 100) + 1
+        This provides a more balanced progression curve where higher levels
+        require exponentially more XP to achieve.
+        """
+        # Level = sqrt(total_xp / 100) + 1
+        new_level = max(1, int(math.sqrt(self.xp / 100)) + 1)
+        return new_level
 
     def award_xp(self, points):
         """Award XP and automatically level up if threshold reached"""
