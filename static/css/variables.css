@@ -1,0 +1,29 @@
+:root {
+    /* Starry Night Palette */
+    --primary-dark: #24305D;
+    /* Deep Navy */
+    --primary-mid: #4154A0;
+    /* Royal Blue */
+    --primary-light: #7084D9;
+    /* Periwinkle */
+    --accent-light: #D6E5E5;
+    /* Pale Blue */
+    --gold-primary: #D8CE73;
+    /* Muted Gold */
+    --gold-light: #F5F1AD;
+    /* Light Gold */
+
+    /* Semantic Colors */
+    --primary: #24305D;
+    --secondary: #4154A0;
+    --bg-color: linear-gradient(180deg, #24305D 0%, #4154A0 40%, #7084D9 70%, #D6E5E5 100%);
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --text-dark: #24305D;
+    --text-light: #D6E5E5;
+    --text-accent: #4154A0;
+
+    /* Layout */
+    --border-radius: 20px;
+    --shadow: 0 8px 30px rgba(36, 48, 93, 0.2);
+    --gold-glow: 0 0 30px rgba(216, 206, 115, 0.6);
+}
