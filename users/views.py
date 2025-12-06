@@ -31,8 +31,9 @@ def profile_view(request, username):
     artworks = user.artworks.all()
     
     # Calculate XP progress to next level
-    xp_for_current_level = (user.level - 1) * 100
-    xp_for_next_level = user.level * 100
+    # Formula: Required XP = (level - 1)² × 100
+    xp_for_current_level = (user.level - 1) ** 2 * 100
+    xp_for_next_level = user.level ** 2 * 100
     xp_progress = user.xp - xp_for_current_level
     xp_needed = xp_for_next_level - xp_for_current_level
     xp_percentage = (xp_progress / xp_needed) * 100 if xp_needed > 0 else 0
