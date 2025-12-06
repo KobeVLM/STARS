@@ -5,10 +5,10 @@
 <div style="max-width: 600px; margin: 0 auto;">
     <div class="card" style="padding: 40px;">
         <h2 style="text-align: center; margin-bottom: 30px;">Edit Your Profile</h2>
-        
+
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            
+
             <div class="form-group">
                 <label>{{ form.bio.label }}</label>
                 {{ form.bio }}
@@ -16,26 +16,28 @@
 
             <div class="form-group">
                 <label>{{ form.avatar.label }}</label>
-                
+
                 <!-- Current Avatar Preview -->
                 <div style="margin-bottom: 15px; text-align: center;">
-                    <img id="avatarPreview" 
-                         src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
-                         alt="Avatar Preview" 
-                         style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <img id="avatarPreview"
+                        src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}"
+                        alt="Avatar Preview" class="profile-avatar">
                 </div>
-                
+
                 {{ form.avatar }}
-                <small style="color: var(--text-light); display: block; margin-top: 5px;">Upload a profile picture</small>
-                
-                <button type="button" onclick="clearAvatar()" style="margin-top: 10px; padding: 5px 15px; background: #ff7675; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">Remove Avatar</button>
+                <small style="color: var(--text-light); display: block; margin-top: 5px;">Upload a profile
+                    picture</small>
+
+                <button type="button" onclick="clearAvatar()"
+                    style="margin-top: 10px; padding: 5px 15px; background: #ff7675; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">Remove
+                    Avatar</button>
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem;">
                 Save Profile
             </button>
         </form>
-        
+
         <div style="text-align: center; margin-top: 20px;">
             <a href="{% url 'profile' username=user.username %}" style="color: var(--text-light);">Cancel</a>
         </div>
@@ -47,16 +49,16 @@
     const avatarPreview = document.getElementById('avatarPreview');
     const defaultAvatar = "{% static 'images/default-avatar.png' %}";
 
-    avatarInput.addEventListener('change', function(e) {
+    avatarInput.addEventListener('change', function (e) {
         const file = e.target.files[0];
-        
+
         if (file) {
             const reader = new FileReader();
-            
-            reader.onload = function(e) {
+
+            reader.onload = function (e) {
                 avatarPreview.src = e.target.result;
             };
-            
+
             reader.readAsDataURL(file);
         }
     });

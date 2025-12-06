@@ -1,46 +1,52 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/landing.css' %}">
+{% endblock %}
+
 {% block content %}
-<div style="display: flex; min-height: 70vh; align-items: center; gap: 60px;">
-    <div style="flex: 1;">
-        <h1 style="font-size: 3.5rem; color: var(--primary); line-height: 1.2; margin-bottom: 20px;">
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">
             Share Your Art.<br>No Pressure.<br>No Drama.
         </h1>
-        <p style="font-size: 1.2rem; color: var(--text-light); margin: 20px 0 40px 0;">
+        <p class="hero-text">
             A safe space for students to grow, share OCs, and level up together.
         </p>
-        <div class="flex-row">
-            <a href="{% url 'register' %}" class="btn btn-primary" style="padding: 15px 30px; font-size: 1.1rem;">Join the Community</a>
-            <a href="{% url 'feed' %}" class="btn btn-outline" style="padding: 15px 30px; font-size: 1.1rem;">Explore First</a>
+        <div class="hero-cta">
+            <a href="{% url 'register' %}" class="btn btn-primary" style="padding: 15px 30px; font-size: 1.1rem;">Join
+                the Community</a>
+            <a href="{% url 'feed' %}" class="btn btn-outline" style="padding: 15px 30px; font-size: 1.1rem;">Explore
+                First</a>
         </div>
     </div>
-    <div style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 400px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white;">
-        <div style="text-align: center; padding: 40px;">
-            <h2 style="font-size: 2.5rem; margin-bottom: 20px;">🎨</h2>
-            <h3 style="font-size: 1.5rem;">Express Yourself</h3>
-            <p style="margin-top: 10px; opacity: 0.9;">Upload artwork, earn XP, level up!</p>
+    <div class="hero-visual">
+        <div class="hero-visual-content">
+            <h2>🎨</h2>
+            <h3>Express Yourself</h3>
+            <p>Upload artwork, earn XP, level up!</p>
         </div>
     </div>
 </div>
 
-<div style="margin-top: 80px;">
-    <h2 style="text-align: center; margin-bottom: 40px; color: var(--text-dark);">Why Join STARS?</h2>
+<div class="features-section">
+    <h2 class="features-title">Why Join STARS?</h2>
     <div class="grid-3">
-        <div class="card" style="padding: 30px; text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 15px;">🎯</div>
-            <h3 style="margin-bottom: 10px;">Gamified Progress</h3>
-            <p style="color: var(--text-light);">Earn XP and level up as you create and engage with the community</p>
+        <div class="card feature-card">
+            <div class="feature-icon">🎯</div>
+            <h3>Gamified Progress</h3>
+            <p class="text-muted">Earn XP and level up as you create and engage with the community</p>
         </div>
-        <div class="card" style="padding: 30px; text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 15px;">🤝</div>
-            <h3 style="margin-bottom: 10px;">Supportive Community</h3>
-            <p style="color: var(--text-light);">Share your OCs and get feedback from fellow student artists</p>
+        <div class="card feature-card">
+            <div class="feature-icon">🤝</div>
+            <h3>Supportive Community</h3>
+            <p class="text-muted">Share your OCs and get feedback from fellow student artists</p>
         </div>
-        <div class="card" style="padding: 30px; text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 15px;">🚀</div>
-            <h3 style="margin-bottom: 10px;">Grow Together</h3>
-            <p style="color: var(--text-light);">Learn, improve, and celebrate creativity without competition</p>
+        <div class="card feature-card">
+            <div class="feature-icon">🚀</div>
+            <h3>Grow Together</h3>
+            <p class="text-muted">Learn, improve, and celebrate creativity without competition</p>
         </div>
     </div>
 </div>

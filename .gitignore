@@ -98,3 +98,9 @@ yarn-error.log*
 
 #database
 db.sqlite3
+
+
+#python
+db.sqlite3
+__pycache__/
+*.pyc

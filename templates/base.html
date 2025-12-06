@@ -1,56 +1,71 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}STARS - Student Artist Space{% endblock %}</title>
-    <link rel="stylesheet" href="{% load static %}{% static 'css/styles.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/utilities.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    {% block extra_css %}{% endblock %}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
     {% load static %}
-    <nav class="flex-between container" style="background: white; margin-bottom: 20px;">
-        <div class="logo"><h2><a href="{% url 'landing' %}" style="text-decoration: none; color: var(--primary);">STARS</a></h2></div>
-        
+    <nav class="flex-between" style="padding: 15px 40px; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <div class="logo">
+            <h2><a href="{% url 'landing' %}" style="text-decoration: none; color: inherit;">STARS</a></h2>
+        </div>
+
         <!-- Search Bar -->
         <form action="{% url 'feed' %}" method="GET" class="search-form">
-            <input type="text" name="q" placeholder="Search art or artists..." class="search-input" value="{{ search_query|default:'' }}">
+            <input type="text" name="q" placeholder="Search art or artists..." class="form-input"
+                value="{{ search_query|default:'' }}">
         </form>
 
         <div class="user-menu flex-row">
             {% if user.is_authenticated %}
-                {% if user.is_staff %}
-                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Admin Panel</a>
-                {% endif %}
-                <a href="{% url 'upload' %}" class="btn btn-primary">+ Upload</a>
-                <div class="xp-display">
-                    <small style="font-weight: 600;">Lvl {{ user.level }}</small>
-                    <div class="xp-bar-container">
-                        <div class="xp-bar-fill" id="navXpBar" data-xp="{{ user.xp }}" style="width: 0%;"></div>
-                    </div>
+            {% if user.is_staff %}
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline"
+                style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Admin Panel</a>
+            {% endif %}
+            <a href="{% url 'upload' %}" class="btn btn-primary">+ Upload</a>
+            <div class="xp-display">
+                <small style="font-weight: 600;">Lvl {{ user.level }}</small>
+                <div class="xp-bar-container">
+                    <div class="xp-bar-fill" id="navXpBar" data-xp="{{ user.xp }}" style="width: 0%;"></div>
                 </div>
-                <script>
-                    // Calculate XP progress within current level (0-100)
-                    const navXpBar = document.getElementById('navXpBar');
-                    const totalXp = parseInt(navXpBar.dataset.xp);
-                    const xpInLevel = totalXp % 100;
-                    navXpBar.style.width = xpInLevel + '%';
-                </script>
-                <a href="{% url 'profile' username=user.username %}">
-                    {% if user.avatar %}
-                        <img src="{{ user.avatar.url }}" class="avatar" alt="{{ user.username }}">
-                    {% else %}
-                        <img src="{% static 'images/default-avatar.png' %}" class="avatar" alt="{{ user.username }}">
-                    {% endif %}
-                </a>
-                <a href="{% url 'account_settings' %}" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Settings</a>
-                <form action="{% url 'logout' %}" method="POST" style="margin: 0; display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.9rem; cursor: pointer;">Logout</button>
-                </form>
+            </div>
+            <script>
+                // Calculate XP progress within current level (0-100)
+                const navXpBar = document.getElementById('navXpBar');
+                const totalXp = parseInt(navXpBar.dataset.xp);
+                const xpInLevel = totalXp % 100;
+                navXpBar.style.width = xpInLevel + '%';
+            </script>
+            <a href="{% url 'profile' username=user.username %}">
+                {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" class="avatar" alt="{{ user.username }}">
+                {% else %}
+                <img src="{% static 'images/default-avatar.png' %}" class="avatar" alt="{{ user.username }}">
+                {% endif %}
+            </a>
+            <a href="{% url 'account_settings' %}" class="btn btn-outline"
+                style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Settings</a>
+            <form action="{% url 'logout' %}" method="POST" style="margin: 0; display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline"
+                    style="padding: 8px 16px; font-size: 0.9rem; cursor: pointer;">Logout</button>
+            </form>
             {% else %}
-                <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
-                <a href="{% url 'register' %}" class="btn btn-outline">Sign Up</a>
+            <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-outline">Sign Up</a>
             {% endif %}
         </div>
     </nav>
@@ -61,4 +76,5 @@
 
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

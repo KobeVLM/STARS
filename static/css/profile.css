@@ -1,0 +1,50 @@
+/* --- Profile --- */
+.profile-header {
+    background: rgba(65, 84, 160, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    margin-bottom: 30px;
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    border: 2px solid rgba(216, 206, 115, 0.4);
+    box-shadow: var(--shadow);
+}
+
+.profile-header .btn-outline {
+    border-color: var(--text-light);
+    color: var(--text-light);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.profile-header .btn-outline:hover {
+    background: var(--text-light);
+    color: var(--primary-dark);
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: linear-gradient(135deg, #D8CE73, #F5F1AD);
+    border: 4px solid var(--gold-light);
+    box-shadow: 0 0 15px rgba(245, 241, 173, 0.8);
+}
+
+.profile-info {
+    flex: 1;
+    color: var(--text-light);
+}
+
+.profile-info h1 {
+    margin-bottom: 10px;
+    color: var(--gold-light);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.profile-bio {
+    color: var(--accent-light);
+    margin: 15px 0;
+}
