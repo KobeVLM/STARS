@@ -95,3 +95,6 @@ yarn-error.log*
 
 # Collected static files
 /static_collected/
+
+#database
+db.sqlite3
