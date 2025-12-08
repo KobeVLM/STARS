@@ -4,6 +4,13 @@ from django.db.models import Q
 from .models import Artwork, Tag
 from .forms import ArtworkForm
 from interactions.forms import CommentForm
+import os
+from supabase import create_client, Client
+
+# Supabase client setup
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(url, key)
 
 
 def explore_feed(request):
@@ -39,6 +46,20 @@ def upload_artwork(request):
         if form.is_valid():
             artwork = form.save(commit=False)
             artwork.artist = request.user
+
+            # Handle image upload to Supabase
+            image_file = request.FILES.get('image')
+            if image_file:
+                # Define a unique path for the image in the bucket
+                file_path = f"artworks/{request.user.username}/{image_file.name}"
+                
+                # Upload to Supabase Storage
+                supabase.storage.from_("artworks").upload(file_path, image_file.read(), {"content-type": image_file.content_type})
+                
+                # Get the public URL
+                public_url = supabase.storage.from_("artworks").get_public_url(file_path)
+                artwork.image = public_url
+
             artwork.save()
             
             # Process tags

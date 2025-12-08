@@ -27,7 +27,7 @@ class Artwork(models.Model):
     )
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='artworks/')
+    image = models.URLField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(Tag, blank=True, related_name='artworks')
 
