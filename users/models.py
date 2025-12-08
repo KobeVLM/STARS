@@ -29,8 +29,10 @@ class CustomUser(AbstractUser):
         new_level = self.calculate_level()
         if new_level > self.level:
             self.level = new_level
-            # Logic for level-up notification can be added here
+            self.save()
+            return True
         self.save()
+        return False
 
     def __str__(self):
         return self.username

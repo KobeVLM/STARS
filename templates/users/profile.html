@@ -6,7 +6,7 @@
 <div class="profile-header">
     <div>
         {% if profile_user.avatar %}
-            <img src="{{ profile_user.avatar.url }}" class="profile-avatar" alt="{{ profile_user.username }}">
+            <img src="{{ profile_user.avatar.url }}" class="profile-avatar" alt="{{ profile_user.username }}" onerror="this.onerror=null;this.src='{% static 'images/default-avatar.png' %}';">
         {% else %}
             <img src="{% static 'images/default-avatar.png' %}" class="profile-avatar" alt="{{ profile_user.username }}">
         {% endif %}
@@ -53,13 +53,13 @@
 </div>
 
 <!-- User's Artworks -->
-<h2 style="margin-bottom: 20px;">Artworks ({{ artworks.count }})</h2>
+<h2 style="color: var(--gold-light); margin-bottom: 20px;">Artworks ({{ artworks.count }})</h2>
 {% if artworks %}
 <div class="grid-3">
     {% for art in artworks %}
     <div class="card">
         <a href="{% url 'detail' pk=art.id %}">
-            <img src="{{ art.image.url }}" alt="{{ art.title }}">
+            <img src="{{ art.image.url }}" alt="{{ art.title }}" onerror="this.onerror=null;this.src='{% static 'images/default-avatar.png' %}';">
         </a>
         <div class="card-content">
             <h3 class="card-title">{{ art.title }}</h3>

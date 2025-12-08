@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.db.models import Q
 from .models import Artwork, Tag
 from .forms import ArtworkForm
@@ -48,6 +49,13 @@ def upload_artwork(request):
                 for tag_name in tag_names:
                     tag, created = Tag.objects.get_or_create(name=tag_name.lower())
                     artwork.tags.add(tag)
+            
+            # Award XP for upload (50 XP)
+            leveled_up = request.user.award_xp(50)
+            if leveled_up:
+                messages.success(request, f"Artwork uploaded! (+50 XP). Level Up! You are now level {request.user.level}", extra_tags='level_up')
+            else:
+                messages.success(request, 'Artwork uploaded! (+50 XP)')
             
             return redirect('detail', pk=artwork.pk)
     else:

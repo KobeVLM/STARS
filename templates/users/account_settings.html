@@ -2,19 +2,9 @@
 
 {% block content %}
 <div style="max-width: 800px; margin: 0 auto;">
-    <h1 style="margin-bottom: 30px;">Account Settings</h1>
+    <h1 style="color : var(--gold-light); margin-bottom: 30px;">Account Settings</h1>
 
-    <!-- Messages -->
-    {% if messages %}
-    <div style="margin-bottom: 20px;">
-        {% for message in messages %}
-        <div
-            style="padding: 15px; background: {% if message.tags == 'success' %}#d4edda{% elif message.tags == 'info' %}#d1ecf1{% else %}#f8d7da{% endif %}; color: {% if message.tags == 'success' %}#155724{% elif message.tags == 'info' %}#0c5460{% else %}#721c24{% endif %}; border-radius: 8px; margin-bottom: 10px;">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    <!-- Messages handled by base.html toasts -->
 
     <!-- Form Errors -->
     {% if form.non_field_errors %}
@@ -30,11 +20,11 @@
             {% csrf_token %}
 
             <!-- Email Section -->
-            <div style="margin-bottom: 40px;">
-                <h2 class="section-title">Email
+            <div style="margin-bottom: 10px;">
+                <h2 style="color : var(--accent-light);" class="section-title">Email
                     Address</h2>
                 <div class="form-group">
-                    <label>{{ form.email.label }}</label>
+                    <label style="color : var(--accent-light);">{{ form.email.label }}</label>
                     {{ form.email }}
                     {% if form.email.errors %}
                     <small style="color: #ff7675;">{{ form.email.errors.0 }}</small>
@@ -43,11 +33,11 @@
             </div>
 
             <!-- Username Section -->
-            <div style="margin-bottom: 40px;">
-                <h2 class="section-title">
+            <div style="margin-bottom: 60px;">
+                <h2 style="color : var(--accent-light);" class="section-title">
                     Username</h2>
                 <div class="form-group">
-                    <label>{{ form.username.label }}</label>
+                    <label style="color : var(--accent-light);">{{ form.username.label }}</label>
                     {{ form.username }}
                     {% if form.username.errors %}
                     <small style="color: #ff7675;">{{ form.username.errors.0 }}</small>
@@ -57,7 +47,7 @@
 
             <!-- Password Section -->
             <div style="margin-bottom: 30px;">
-                <h2 class="section-title">Change Password</h2>
+                <h2 style="color : var(--gold-light); margin-bottom: 20px;" class="section-title">Change Password</h2>
 
                 <div class="form-group">
                     <label>{{ form.current_password.label }}</label>
@@ -68,7 +58,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>{{ form.new_password.label }}</label>
+                    <label >{{ form.new_password.label }}</label>
                     {{ form.new_password }}
                     {% if form.new_password.errors %}
                     <small style="color: #ff7675;">{{ form.new_password.errors.0 }}</small>
@@ -83,8 +73,8 @@
                     {% endif %}
                 </div>
 
-                <small style="color: var(--text-light); display: block; margin-top: 10px;">
-                    ℹ️ Leave password fields blank if you don't want to change your password.
+                <small style="display: block; margin-top: 10px;">
+                    Leave password fields blank if you don't want to change your password.
                 </small>
             </div>
 

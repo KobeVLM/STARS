@@ -24,8 +24,8 @@
 }
 
 .profile-avatar {
-    width: 120px;
-    height: 120px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     object-fit: cover;
     background: linear-gradient(135deg, #D8CE73, #F5F1AD);
@@ -47,4 +47,13 @@
 .profile-bio {
     color: var(--accent-light);
     margin: 15px 0;
+}
+
+#avatarPreview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid var(--gold-light);
+    box-shadow: 0 0 15px rgba(245, 241, 173, 0.8);
 }

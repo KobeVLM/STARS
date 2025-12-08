@@ -2,6 +2,18 @@
 {% load static %}
 
 {% block content %}
+{% block extra_css %}
+<style>
+    #avatarPreview {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid var(--gold-light);
+        box-shadow: 0 0 15px rgba(245, 241, 173, 0.8);
+    }
+</style>
+{% endblock %}
 <div style="max-width: 600px; margin: 0 auto;">
     <div class="card" style="padding: 40px;">
         <h2 style="text-align: center; margin-bottom: 30px;">Edit Your Profile</h2>
@@ -13,6 +25,8 @@
                 <label>{{ form.bio.label }}</label>
                 {{ form.bio }}
             </div>
+            
+            <input type="hidden" name="clear_avatar" id="clearAvatarFlag" value="false">
 
             <div class="form-group">
                 <label>{{ form.avatar.label }}</label>
@@ -25,7 +39,7 @@
                 </div>
 
                 {{ form.avatar }}
-                <small style="color: var(--text-light); display: block; margin-top: 5px;">Upload a profile
+                <small style="display: block; margin-top: 5px;">Upload a profile
                     picture</small>
 
                 <button type="button" onclick="clearAvatar()"
@@ -39,7 +53,7 @@
         </form>
 
         <div style="text-align: center; margin-top: 20px;">
-            <a href="{% url 'profile' username=user.username %}" style="color: var(--text-light);">Cancel</a>
+            <a href="{% url 'profile' username=user.username %}">Cancel</a>
         </div>
     </div>
 </div>
@@ -61,11 +75,14 @@
 
             reader.readAsDataURL(file);
         }
+        // Reset clear flag if user selects a new file
+        document.getElementById('clearAvatarFlag').value = 'false';
     });
 
     function clearAvatar() {
         avatarInput.value = '';
         avatarPreview.src = defaultAvatar;
+        document.getElementById('clearAvatarFlag').value = 'true';
     }
 </script>
 {% endblock %}

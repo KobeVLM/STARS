@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout
+from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, ProfileEditForm, AccountSettingsForm
 from .models import CustomUser
@@ -56,9 +58,17 @@ def profile_edit(request):
         form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            # Award XP for completing profile
+            
+            # Check if avatar should be cleared
+            if request.POST.get('clear_avatar') == 'true':
+                request.user.avatar = None
+                request.user.save()
+                
+            # Award XP for completing profile (20 XP)
             if request.user.bio and request.user.avatar:
-                request.user.award_xp(20)
+                leveled_up = request.user.award_xp(20)
+                if leveled_up:
+                    messages.success(request, f"Level Up! You are now level {request.user.level}", extra_tags='level_up')
             return redirect('profile', username=request.user.username)
     else:
         form = ProfileEditForm(instance=request.user)
@@ -108,3 +118,19 @@ def account_settings(request):
         form = AccountSettingsForm(request.user)
     
     return render(request, 'users/account_settings.html', {'form': form})
+
+
+class CustomLoginView(LoginView):
+    """Custom login view to add success message"""
+    template_name = 'users/login.html'
+    
+    def form_valid(self, form):
+        messages.success(self.request, f"Welcome back, {form.get_user().username}!")
+        return super().form_valid(form)
+
+
+def logout_view(request):
+    """Custom logout view to add success message"""
+    logout(request)
+    messages.success(request, 'Logged out successfully.')
+    return redirect('landing')

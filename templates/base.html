@@ -1,7 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,9 +14,7 @@
     {% block extra_css %}{% endblock %}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
-    {% load static %}
     <nav class="flex-between" style="padding: 15px 40px; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
         <div class="logo">
             <h2><a href="{% url 'landing' %}" style="text-decoration: none; color: inherit;">STARS</a></h2>
@@ -34,6 +31,8 @@
             {% if user.is_staff %}
             <a href="{% url 'admin_dashboard' %}" class="btn btn-outline"
                 style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Admin Panel</a>
+            <button class="btn btn-outline" onclick="ui.showLevelUp({{ user.level }})" style="padding: 8px 16px; font-size: 0.9rem; margin-left: 5px;">Test Modal</button>
+            <button class="btn btn-outline" onclick="ui.showToast('Test message!', 'success')" style="padding: 8px 16px; font-size: 0.9rem; margin-left: 5px;">Test Toast</button>
             {% endif %}
             <a href="{% url 'upload' %}" class="btn btn-primary">+ Upload</a>
             <div class="xp-display">
@@ -51,7 +50,7 @@
             </script>
             <a href="{% url 'profile' username=user.username %}">
                 {% if user.avatar %}
-                <img src="{{ user.avatar.url }}" class="avatar" alt="{{ user.username }}">
+                <img src="{{ user.avatar.url }}" class="avatar" alt="{{ user.username }}" onerror="this.onerror=null;this.src='{% static 'images/default-avatar.png' %}';">
                 {% else %}
                 <img src="{% static 'images/default-avatar.png' %}" class="avatar" alt="{{ user.username }}">
                 {% endif %}
@@ -74,7 +73,142 @@
         {% block content %}{% endblock %}
     </main>
 
-    {% block extra_js %}{% endblock %}
-</body>
+    <!-- Core JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- UI Logic (Embedded due to file system constraints) -->
+    <script>
+    const ui = {
+        showLevelUp: function(level) {
+            // Use existing overlay or create new one
+            let overlay = document.getElementById('loader-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'loader-overlay';
+                overlay.className = 'loader-overlay active';
+                document.body.appendChild(overlay);
+            } else {
+                // Clear existing spinner if present
+                overlay.innerHTML = '';
+                overlay.classList.add('active');
+            }
+            
+            const modal = document.createElement('div');
+            modal.className = 'level-up-modal';
+            modal.innerHTML = `
+                <div class="level-badge-large">
+                    <i data-lucide="star"></i>
+                </div>
+                <h2 style="color: var(--text-dark); margin-bottom: 10px;">Level Up!</h2>
+                <p style="color: var(--text-muted); margin-bottom: 25px;">Congratulations! You reached Level ${level}</p>
+                <button class="btn btn-primary" onclick="document.getElementById('loader-overlay').classList.remove('active');">Awesome!</button>
+            `;
+            
+            overlay.appendChild(modal);
+            
+            if (window.lucide) {
+                lucide.createIcons({ root: modal });
+            }
+        },
 
+        showLoading: function() {
+            const loader = document.getElementById('loader-overlay');
+            if (loader) {
+                loader.classList.add('active');
+            }
+        },
+
+        hideLoading: function() {
+            const loader = document.getElementById('loader-overlay');
+            if (loader) {
+                loader.classList.remove('active');
+            }
+        },
+
+        showToast: function(message, type) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            type = type || 'info';
+            // Map Django tags
+            if (type.includes('success')) type = 'success';
+            else if (type.includes('error') || type.includes('warning')) type = 'error';
+            else type = 'info';
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let iconHtml = '';
+            if (type === 'success') iconHtml = '<i data-lucide="check"></i>';
+            else if (type === 'error') iconHtml = '<i data-lucide="alert-circle"></i>';
+            else iconHtml = '<i data-lucide="info"></i>';
+
+            toast.innerHTML = `
+                <div class="toast-icon">${iconHtml}</div>
+                <div class="toast-message">${message}</div>
+            `;
+
+            container.appendChild(toast);
+
+            if (window.lucide) {
+                lucide.createIcons({ root: toast });
+            }
+
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 500);
+            }, 3500);
+        }
+    };
+    window.ui = ui;
+    </script>
+
+    <!-- UI Elements -->
+    <div id="loader-overlay" class="loader-overlay">
+        <div class="spinner"></div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Page-specific JS -->
+    {% block extra_js %}{% endblock %}
+    
+    <!-- Initialize icons & UI -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
+    <script>
+        // Initialize icons immediately and after DOM ready
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+            
+            // Small delay to ensure DOM is fully ready
+            setTimeout(() => {
+                // Show Django messages as toasts or level up modal
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if 'level_up' in message.tags %}
+                            if (typeof ui !== 'undefined' && ui.showLevelUp) {
+                                ui.showLevelUp({{ user.level }});
+                            }
+                        {% else %}
+                            if (typeof ui !== 'undefined' && ui.showToast) {
+                                ui.showToast("{{ message|escapejs }}", "{{ message.tags }}");
+                            }
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            }, 100);
+        });
+    </script>
+</body>
 </html>
