@@ -30,9 +30,8 @@ def award_like_xp(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender='interactions.Comment')
-def award_comment_xp(sender, instance, created, **kwargs):
-    """Award XP when user comments"""
+def check_badges_on_comment(sender, instance, created, **kwargs):
+    """Checks for badge unlocks when a user comments."""
     if created:
-        # XP already awarded in view, just check badges
         from .badge_utils import check_and_award_badges
         check_and_award_badges(instance.user)

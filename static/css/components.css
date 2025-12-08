@@ -229,3 +229,63 @@
     border-color: var(--primary-light);
     box-shadow: 0 0 15px rgba(112, 132, 217, 0.3);
 }
+
+/* --- Toast Notifications --- */
+.toast {
+    padding: 16px 24px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    margin-bottom: 12px;
+    min-width: 300px;
+    max-width: 500px;
+    animation: slideOut 0.3s ease forwards;
+    font-weight: 500;
+    border-left: 4px solid #ccc;
+}
+
+.toast.show {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.toast-success {
+    border-left-color: #52c41a;
+    background: #f6ffed;
+    color: #274e11;
+}
+
+.toast-error {
+    border-left-color: #ff7675;
+    background: #fff1f0;
+    color: #5c0a10;
+}
+
+.toast-info {
+    border-left-color: #1890ff;
+    background: #e6f7ff;
+    color: #003a8c;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}

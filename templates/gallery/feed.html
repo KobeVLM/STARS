@@ -16,7 +16,7 @@
     {% for art in artworks %}
     <div class="card">
         <a href="{% url 'detail' pk=art.id %}">
-            <img src="{{ art.image.url }}" alt="{{ art.title }}">
+            <img src="{{ art.image }}" alt="{{ art.title }}">
         </a>
         <div class="card-content">
             <h3 class="card-title">{{ art.title }}</h3>
