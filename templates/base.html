@@ -74,6 +74,42 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+    <script>
+        function showToast(message, type = 'success', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.2rem;">
+                        ${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}
+                    </span>
+                    <span>${message}</span>
+                </div>
+            `;
+            container.appendChild(toast);
+
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+
+            // Remove after duration
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // Display Django messages as toasts
+        {% if messages %}
+            {% for message in messages %}
+                showToast('{{ message|safe }}', '{{ message.tags|default:"info" }}', 3000);
+            {% endfor %}
+        {% endif %}
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 

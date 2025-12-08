@@ -47,10 +47,8 @@ def add_comment(request, artwork_id):
             comment.artwork = artwork
             comment.save()
             
-            # Award XP for commenting
-            request.user.award_xp(5)
             
-            messages.success(request, 'Comment posted! (+5 XP)')
+            messages.success(request, 'Comment posted!')
     
     return redirect('detail', pk=artwork_id)
 

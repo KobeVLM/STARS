@@ -1,7 +1,10 @@
 Django>=5.0
-psycopg2-binary
+psycopg-binary==3.3.2
 dj-database-url
 boto3
 django-storages
 Pillow
-python-dotenv
+python-dotenv==1.0.1
+whitenoise==6.7.0
+supabase==2.5.0
+dj-database-url==2.2.0

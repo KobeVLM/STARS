@@ -59,6 +59,7 @@ def profile_edit(request):
             # Award XP for completing profile
             if request.user.bio and request.user.avatar:
                 request.user.award_xp(20)
+            messages.success(request, "Your profile has been updated successfully!")
             return redirect('profile', username=request.user.username)
     else:
         form = ProfileEditForm(instance=request.user)
