@@ -1,11 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.contrib import messages
 from .models import Artwork, Tag
 from .forms import ArtworkForm
 from interactions.forms import CommentForm
 import os
 from supabase import create_client, Client
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 # Supabase client setup
 url: str = os.environ.get("SUPABASE_URL")
@@ -47,18 +52,27 @@ def upload_artwork(request):
             artwork = form.save(commit=False)
             artwork.artist = request.user
 
-            # Handle image upload to Supabase
             image_file = request.FILES.get('image')
             if image_file:
-                # Define a unique path for the image in the bucket
-                file_path = f"artworks/{request.user.username}/{image_file.name}"
-                
-                # Upload to Supabase Storage
-                supabase.storage.from_("artworks").upload(file_path, image_file.read(), {"content-type": image_file.content_type})
-                
-                # Get the public URL
-                public_url = supabase.storage.from_("artworks").get_public_url(file_path)
-                artwork.image = public_url
+                try:
+                    # Define a unique path for the image in the bucket
+                    file_path = f"artworks/{request.user.username}/{image_file.name}"
+                    
+                    # Upload to Supabase Storage
+                    supabase.storage.from_("artworks").upload(
+                        file_path, 
+                        image_file.read(), 
+                        {"content-type": image_file.content_type}
+                    )
+                    
+                    # Get the public URL
+                    public_url = supabase.storage.from_("artworks").get_public_url(file_path)
+                    artwork.image = public_url
+
+                except Exception as e:
+                    logger.error(f"Supabase upload failed: {e}")
+                    messages.error(request, f"Error uploading image: {str(e)}")
+                    return render(request, 'gallery/upload.html', {'form': form})
 
             artwork.save()
             
@@ -70,7 +84,11 @@ def upload_artwork(request):
                     tag, created = Tag.objects.get_or_create(name=tag_name.lower())
                     artwork.tags.add(tag)
             
+            messages.success(request, "Your artwork has been uploaded successfully!")
             return redirect('detail', pk=artwork.pk)
+        else:
+            # Pass form errors to the template
+            return render(request, 'gallery/upload.html', {'form': form})
     else:
         form = ArtworkForm()
     return render(request, 'gallery/upload.html', {'form': form})

@@ -14,9 +14,16 @@ class ArtworkForm(forms.ModelForm):
         label='Tags (comma separated)'
     )
 
+    # Manually add the image field so it's not tied to the model's URLField
+    image = forms.ImageField(
+        required=True, 
+        widget=forms.FileInput(attrs={'class': 'form-file'})
+    )
+
     class Meta:
         model = Artwork
-        fields = ['title', 'description', 'image']
+        # 'image' is removed from here because we handle it manually
+        fields = ['title', 'description']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-input',
@@ -27,5 +34,4 @@ class ArtworkForm(forms.ModelForm):
                 'rows': 4,
                 'placeholder': 'Describe your artwork...'
             }),
-            'image': forms.FileInput(attrs={'class': 'form-file'}),
         }
