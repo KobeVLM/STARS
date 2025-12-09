@@ -8,30 +8,35 @@
 
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-
-            <div class="form-group">
-                <label>{{ form.bio.label }}</label>
-                {{ form.bio }}
-            </div>
-
-            <div class="form-group">
+<div class="form-group">
                 <label>{{ form.avatar.label }}</label>
 
                 <!-- Current Avatar Preview -->
                 <div style="margin-bottom: 15px; text-align: center;">
                     <img id="avatarPreview"
                         src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}"
-                        alt="Avatar Preview" class="profile-avatar">
+                        alt="Avatar Preview" class="profile-avatar"
+                        onerror="this.onerror=null;this.src='{% static 'images/default-avatar.png' %}';">
                 </div>
 
                 {{ form.avatar }}
-                <small style="color: var(--text-light); display: block; margin-top: 5px;">Upload a profile
+                <small style="color: var(--primary-mid); display: block; margin-top: 5px;">Upload a profile
                     picture</small>
 
                 <button type="button" onclick="clearAvatar()"
                     style="margin-top: 10px; padding: 5px 15px; background: #ff7675; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">Remove
                     Avatar</button>
+                    
+                <!-- Hidden input to signal avatar removal -->
+                <input type="hidden" name="clear_avatar" id="clear_avatar" value="false">
             </div>
+            
+            <div class="form-group">
+                <label>{{ form.bio.label }}</label>
+                {{ form.bio }}
+            </div>
+
+            
 
             <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem;">
                 Save Profile
@@ -39,7 +44,7 @@
         </form>
 
         <div style="text-align: center; margin-top: 20px;">
-            <a href="{% url 'profile' username=user.username %}" style="color: var(--text-light);">Cancel</a>
+            <a href="{% url 'profile' username=user.username %}" style="color: var(--primary-mid);">Cancel</a>
         </div>
     </div>
 </div>
@@ -47,6 +52,7 @@
 <script>
     const avatarInput = document.getElementById('id_avatar');
     const avatarPreview = document.getElementById('avatarPreview');
+    const clearAvatarInput = document.getElementById('clear_avatar');
     const defaultAvatar = "{% static 'images/default-avatar.png' %}";
 
     avatarInput.addEventListener('change', function (e) {
@@ -60,12 +66,16 @@
             };
 
             reader.readAsDataURL(file);
+            // If user uploads a new file, reset the clear flag
+            clearAvatarInput.value = "false";
         }
     });
 
     function clearAvatar() {
         avatarInput.value = '';
         avatarPreview.src = defaultAvatar;
+        // Signal backend to remove the avatar
+        clearAvatarInput.value = "true";
     }
 </script>
 {% endblock %}

@@ -30,6 +30,17 @@
     align-items: center;
 }
 
+.hero-cta .btn-outline {
+    border-color: var(--text-light);
+    color: var(--text-light);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.hero-cta .btn-outline:hover {
+    background: var(--text-light);
+    color: var(--primary-dark);
+}
+
 .hero-visual {
     flex: 1;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

@@ -4,7 +4,7 @@
 {% block content %}
 <div style="max-width: 1000px; margin: 0 auto;">
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <h1>Edit User: {{ user_to_edit.username }}</h1>
         <a href="{% url 'admin_users' %}" class="btn btn-outline">← Back to Users</a>
     </div>
@@ -33,11 +33,11 @@
                     <img src="{% static 'images/default-avatar.png' %}" alt="{{ user_to_edit.username }}" class="profile-avatar">
                 {% endif %}
                 <h3 style="margin-top: 15px;">{{ user_to_edit.username }}</h3>
-                <p style="color: var(--text-light);">{{ user_to_edit.email|default:"No email" }}</p>
+                <p style="color: var(--primary-mid);">{{ user_to_edit.email|default:"No email" }}</p>
             </div>
 
             <!-- User Stats -->
-            <div style="background: var(--bg-color); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                 <h3 style="margin-bottom: 15px;">Statistics</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div>

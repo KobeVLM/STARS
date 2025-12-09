@@ -74,13 +74,19 @@ nav {
     gap: 20px;
 }
 
-.avatar {
+.nav-avatar {
     width: 40px;
     height: 40px;
+    min-width: 40px;
+    min-height: 40px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--gold-light);
     box-shadow: 0 0 8px rgba(245, 241, 173, 0.8);
+    display: block;
+    background-color: var(--bg-color);
+    /* Fallback color */
+    flex-shrink: 0;
 }
 
 /* --- Responsive --- */

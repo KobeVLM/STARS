@@ -19,6 +19,7 @@
     --bg-color: linear-gradient(180deg, #24305D 0%, #4154A0 40%, #7084D9 70%, #D6E5E5 100%);
     --card-bg: rgba(255, 255, 255, 0.95);
     --text-dark: #24305D;
+    --text-mid: #666666;
     --text-light: #D6E5E5;
     --text-accent: #4154A0;
 

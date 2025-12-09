@@ -55,6 +55,10 @@ def profile_edit(request):
     if request.method == 'POST':
         form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
+            # Check if user requested to clear avatar
+            if request.POST.get('clear_avatar') == 'true':
+                request.user.avatar = None
+            
             form.save()
             # Award XP for completing profile
             if request.user.bio and request.user.avatar:

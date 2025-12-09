@@ -6,12 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}STARS - Student Artist Space{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/variables.css' %}">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
-    <link rel="stylesheet" href="{% static 'css/components.css' %}">
-    <link rel="stylesheet" href="{% static 'css/utilities.css' %}">
-    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/variables.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/utilities.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}?v=4">
+    <script src="https://unpkg.com/lucide@latest"></script>
     {% block extra_css %}{% endblock %}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -50,11 +51,7 @@
                 navXpBar.style.width = xpInLevel + '%';
             </script>
             <a href="{% url 'profile' username=user.username %}">
-                {% if user.avatar %}
-                <img src="{{ user.avatar.url }}" class="avatar" alt="{{ user.username }}">
-                {% else %}
-                <img src="{% static 'images/default-avatar.png' %}" class="avatar" alt="{{ user.username }}">
-                {% endif %}
+                <img src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" class="nav-avatar" alt="{{ user.username }}" width="40" height="40" onerror="this.onerror=null;this.src='{% static 'images/default-avatar.png' %}';">
             </a>
             <a href="{% url 'account_settings' %}" class="btn btn-outline"
                 style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Settings</a>
@@ -75,39 +72,78 @@
     </main>
 
     <!-- Toast Notification Container -->
-    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+    <div id="toast-container" class="toast-container"></div>
 
     <script>
-        function showToast(message, type = 'success', duration = 3000) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 1.2rem;">
-                        ${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}
-                    </span>
-                    <span>${message}</span>
-                </div>
-            `;
-            container.appendChild(toast);
+        const ui = {
+            showToast: function(message, type) {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
 
-            // Trigger animation
-            setTimeout(() => toast.classList.add('show'), 10);
+                // Map Django message tags to styling classes
+                if (type.includes('success')) type = 'success';
+                else if (type.includes('error') || type.includes('warning')) type = 'error';
+                else type = 'info';
 
-            // Remove after duration
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, duration);
-        }
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                
+                // Add Icon based on type
+                let iconHtml = type === 'success' ? '<i data-lucide="check"></i>' : '<i data-lucide="info"></i>';
 
-        // Display Django messages as toasts
-        {% if messages %}
-            {% for message in messages %}
-                showToast('{{ message|safe }}', '{{ message.tags|default:"info" }}', 3000);
-            {% endfor %}
-        {% endif %}
+                toast.innerHTML = `
+                    <div class="toast-icon">${iconHtml}</div>
+                    <div class="toast-message">${message}</div>
+                `;
+
+                container.appendChild(toast);
+                
+                // Initialize icons if using Lucide
+                if (window.lucide) lucide.createIcons({ root: toast });
+
+                // Animate In
+                requestAnimationFrame(() => toast.classList.add('show'));
+
+                // Animate Out after 3.5s
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 500);
+                }, 3500);
+            },
+
+            showLevelUp: function(level) {
+                const overlay = document.createElement('div');
+                overlay.className = 'loader-overlay active'; // Re-use loader overlay styles
+                overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                
+                overlay.innerHTML = `
+                    <div class="level-up-modal">
+                        <div class="level-badge-large"><i data-lucide="star"></i></div>
+                        <h2>Level Up!</h2>
+                        <p>Congratulations! You reached Level ${level}</p>
+                        <button class="btn btn-primary" onclick="this.closest('.loader-overlay').remove()">Awesome!</button>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+                if (window.lucide) lucide.createIcons({ root: overlay });
+            }
+        };
+        window.ui = ui;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            {% if messages %}
+                {% for message in messages %}
+                    {% if 'level_up' in message.tags %}
+                        ui.showLevelUp({{ user.level }});
+                    {% else %}
+                        // Use escapejs to prevent syntax errors with special chars
+                        ui.showToast("{{ message|escapejs }}", "{{ message.tags }}");
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            
+            if (window.lucide) lucide.createIcons();
+        });
     </script>
 
     {% block extra_js %}{% endblock %}
