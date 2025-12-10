@@ -26,27 +26,29 @@ if not getattr(django_settings, 'USE_LOCAL_STORAGE', False):
 
 
 def explore_feed(request):
-    """Main gallery feed with search, category, and tag filtering"""
-    artworks = Artwork.objects.all().select_related('artist', 'category').prefetch_related('tags', 'likes')
-    
-    # Filter by category
-    category_slug = request.GET.get('category')
-    if category_slug:
-        artworks = artworks.filter(category__slug=category_slug)
+    """Main gallery feed with search and category-based carousel sections"""
     
     # Search by title, artist username, or tags
     query = request.GET.get('q')
-    if query:
-        artworks = artworks.filter(
-            Q(title__icontains=query) | 
-            Q(artist__username__icontains=query) |
-            Q(tags__name__icontains=query)
-        ).distinct()
     
-    # Filter by tag
-    tag_slug = request.GET.get('tag')
-    if tag_slug:
-        artworks = artworks.filter(tags__slug=tag_slug)
+    # Get all categories with their artworks
+    categories_with_artworks = []
+    for category in Category.objects.all().order_by('order', 'name'):
+        artworks = Artwork.objects.filter(category=category).select_related('artist').prefetch_related('tags', 'likes').order_by('-created_at')
+        
+        # Apply search filter if present
+        if query:
+            artworks = artworks.filter(
+                Q(title__icontains=query) | 
+                Q(artist__username__icontains=query) |
+                Q(tags__name__icontains=query)
+            ).distinct()
+        
+        categories_with_artworks.append({
+            'category': category,
+            'artworks': list(artworks),  # Convert to list for template
+            'count': artworks.count()
+        })
     
     # Get IDs of artworks the current user has liked
     user_liked_ids = []
@@ -55,11 +57,7 @@ def explore_feed(request):
         user_liked_ids = list(Like.objects.filter(user=request.user).values_list('artwork_id', flat=True))
 
     context = {
-        'artworks': artworks,
-        'categories': Category.objects.all(),
-        'current_category': category_slug,
-        'tags': Tag.objects.all(),
-        'current_tag': tag_slug,
+        'categories_with_artworks': categories_with_artworks,
         'search_query': query,
         'user_liked_ids': user_liked_ids,
     }
