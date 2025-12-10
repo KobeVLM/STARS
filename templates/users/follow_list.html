@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ list_type }} - {{ profile_user.username }} - STARS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .follow-list-header {
+        margin-bottom: 30px;
+    }
+    
+    .follow-list-header h1 {
+        font-size: 1.8rem;
+        color: var(--text-dark);
+    }
+    
+    .user-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 600px;
+    }
+    
+    .user-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        transition: transform 0.2s ease;
+    }
+    
+    .user-item:hover {
+        transform: translateX(5px);
+    }
+    
+    .user-item img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .user-item-info {
+        flex: 1;
+    }
+    
+    .user-item-info h3 {
+        margin: 0;
+        font-size: 1rem;
+    }
+    
+    .user-item-info h3 a {
+        color: var(--text-dark);
+        text-decoration: none;
+    }
+    
+    .user-item-info h3 a:hover {
+        color: var(--primary-light);
+    }
+    
+    .user-item-meta {
+        color: var(--text-light);
+        font-size: 0.85rem;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: var(--primary-light);
+        text-decoration: none;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'profile' username=profile_user.username %}" class="back-link">← Back to {{ profile_user.username }}'s profile</a>
+
+<div class="follow-list-header">
+    <h1>{{ list_type }} ({{ users_list|length }})</h1>
+</div>
+
+<div class="user-list">
+    {% for user_item in users_list %}
+    <div class="user-item">
+        <a href="{% url 'profile' username=user_item.username %}">
+            {% if user_item.avatar %}
+            <img src="{{ user_item.avatar.url }}" alt="{{ user_item.username }}">
+            {% else %}
+            <img src="{% static 'images/default-avatar.png' %}" alt="{{ user_item.username }}">
+            {% endif %}
+        </a>
+        <div class="user-item-info">
+            <h3><a href="{% url 'profile' username=user_item.username %}">{{ user_item.username }}</a></h3>
+            <div class="user-item-meta">Level {{ user_item.level }} · {{ user_item.xp }} XP</div>
+        </div>
+        {% if user != user_item %}
+        <form action="{% url 'toggle_follow' username=user_item.username %}" method="POST" style="margin: 0;">
+            {% csrf_token %}
+            {% if user_item.id in my_following_ids %}
+            <button type="submit" class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; background: var(--primary-light); color: white; border-color: var(--primary-light);">
+                ✔ Following
+            </button>
+            {% else %}
+            <button type="submit" class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem;">
+                + Follow
+            </button>
+            {% endif %}
+        </form>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div style="text-align: center; padding: 40px; color: var(--text-light);">
+        <p>No users to show.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

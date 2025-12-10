@@ -13,7 +13,7 @@
     {% if messages %}
     <div style="margin-bottom: 20px;">
         {% for message in messages %}
-        <div style="padding: 15px; background: {% if message.tags == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if message.tags == 'success' %}#155724{% else %}#721c24{% endif %}; border-radius: 8px; margin-bottom: 10px;">
+        <div class="alert alert-{{ message.tags|default:'info' }}">
             {{ message }}
         </div>
         {% endfor %}
@@ -37,7 +37,7 @@
             </div>
 
             <!-- User Stats -->
-            <div style="background: var(--bg-color); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="background: var(--stat-bg); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                 <h3 style="margin-bottom: 15px;">Statistics</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div>

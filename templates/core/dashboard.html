@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - STARS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-hero {
+        background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+        color: white;
+        padding: 40px;
+        border-radius: var(--border-radius);
+        margin-bottom: 30px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: var(--card-bg);
+        padding: 25px;
+        border-radius: var(--border-radius);
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+    
+    .xp-section {
+        background: var(--card-bg);
+        padding: 25px;
+        border-radius: var(--border-radius);
+        margin-bottom: 30px;
+    }
+    
+    .xp-bar-large {
+        height: 20px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 15px 0;
+    }
+    
+    .xp-bar-large .fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary) 0%, #764ba2 100%);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+    
+    .quick-actions {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .quick-action-btn {
+        flex: 1;
+        min-width: 150px;
+        padding: 20px;
+        border-radius: var(--border-radius);
+        text-align: center;
+        text-decoration: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .quick-action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .quick-action-btn.primary {
+        background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .quick-action-btn.secondary {
+        background: var(--card-bg);
+        color: var(--text-dark);
+        border: 2px solid #e9ecef;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .streak-badge {
+        background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Hero -->
+<div class="dashboard-hero">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div>
+            <h1 style="margin-bottom: 10px;">Welcome back, {{ user.username }}! 🎨</h1>
+            <p style="opacity: 0.9; font-size: 1.1rem;">Ready to create something amazing today?</p>
+        </div>
+        {% if user.streak_count > 0 %}
+        <div class="streak-badge">
+            🔥 {{ user.streak_count }} Day Streak
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <a href="{% url 'upload' %}" class="quick-action-btn primary">
+        <div style="font-size: 2rem; margin-bottom: 10px;">➕</div>
+        <div style="font-weight: 600;">Upload Artwork</div>
+    </a>
+    <a href="{% url 'feed' %}" class="quick-action-btn secondary">
+        <div style="font-size: 2rem; margin-bottom: 10px;">🖼️</div>
+        <div style="font-weight: 600;">Browse Feed</div>
+    </a>
+    <a href="{% url 'profile' username=user.username %}" class="quick-action-btn secondary">
+        <div style="font-size: 2rem; margin-bottom: 10px;">👤</div>
+        <div style="font-weight: 600;">My Profile</div>
+    </a>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">🎨</div>
+        <div class="stat-value">{{ total_artworks }}</div>
+        <div class="stat-label">Artworks</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">❤️</div>
+        <div class="stat-value">{{ total_likes_received }}</div>
+        <div class="stat-label">Likes Received</div>
+    </div>
+    <div class="stat-card" {% if unread_comments > 0 %}style="border: 2px solid var(--gold-primary);"{% endif %}>
+        <div class="stat-icon">💬</div>
+        <div class="stat-value">{{ unread_comments }}{% if unread_comments > 0 %}<span style="color: var(--gold-primary);"> NEW</span>{% endif %}</div>
+        <div class="stat-label">Unread Comments</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-value">{{ user.xp }}</div>
+        <div class="stat-label">Total XP</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🏅</div>
+        <div class="stat-value">{{ user.level }}</div>
+        <div class="stat-label">Level</div>
+    </div>
+</div>
+
+<!-- XP Progress -->
+<div class="xp-section">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Level {{ user.level }} Progress</h3>
+        <span class="level-badge">{{ xp_progress|floatformat:0 }} / {{ xp_needed }} XP to Level {{ user.level|add:1 }}</span>
+    </div>
+    <div class="xp-bar-large">
+        <div class="fill" style="width: {{ xp_percentage }}%;"></div>
+    </div>
+    <p style="color: var(--text-light); font-size: 0.9rem;">
+        Keep creating and engaging to earn more XP! 
+        {% if user.streak_count > 1 %}🔥 You're on a {{ user.streak_count }}-day streak!{% endif %}
+    </p>
+</div>
+
+<!-- From Artists You Follow -->
+{% if followed_artworks %}
+<div style="margin-bottom: 30px;">
+    <div class="section-title">
+        <span>👥 From Artists You Follow</span>
+        <span style="background: var(--gold-primary); color: var(--primary-dark); padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">{{ followed_artworks|length }} NEW</span>
+    </div>
+    <div class="grid-3">
+        {% for art in followed_artworks %}
+        <div class="card" style="border: 2px solid var(--gold-primary);">
+            <a href="{% url 'detail' pk=art.id %}">
+                <img src="{{ art.get_image_url }}" alt="{{ art.title }}">
+            </a>
+            <div class="card-content">
+                <h3 class="card-title">{{ art.title }}</h3>
+                <small class="card-meta">by <a href="{% url 'profile' username=art.artist.username %}" style="color: var(--primary); text-decoration: none;">{{ art.artist.username }}</a></small>
+                <div style="margin-top: 8px; color: var(--text-light); font-size: 0.8rem;">
+                    {{ art.created_at|timesince }} ago
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Trending Artworks -->
+{% if trending_artworks %}
+<div style="margin-bottom: 30px;">
+    <div class="section-title">
+        <span>🔥 Trending Artworks</span>
+        <a href="{% url 'feed' %}" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">See all →</a>
+    </div>
+    <div class="grid-3">
+        {% for art in trending_artworks %}
+        <div class="card">
+            <a href="{% url 'detail' pk=art.id %}">
+                <img src="{{ art.get_image_url }}" alt="{{ art.title }}">
+            </a>
+            <div class="card-content">
+                <h3 class="card-title">{{ art.title }}</h3>
+                <small class="card-meta">by <a href="{% url 'profile' username=art.artist.username %}" style="color: var(--primary); text-decoration: none;">{{ art.artist.username }}</a></small>
+                <div style="margin-top: 10px; color: #ff7675;">
+                    ♥ {{ art.like_count }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- User's Recent Artworks -->
+{% if recent_artworks %}
+<div style="margin-bottom: 30px;">
+    <div class="section-title">
+        <span>📁 Your Recent Work</span>
+        <a href="{% url 'profile' username=user.username %}" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">View all →</a>
+    </div>
+    <div class="grid-3">
+        {% for art in recent_artworks %}
+        <div class="card">
+            <a href="{% url 'detail' pk=art.id %}">
+                <img src="{{ art.get_image_url }}" alt="{{ art.title }}">
+            </a>
+            <div class="card-content">
+                <h3 class="card-title">{{ art.title }}</h3>
+                <small class="card-meta">{{ art.created_at|date:"M d, Y" }}</small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 60px 20px;">
+    <div style="font-size: 4rem; margin-bottom: 20px;">🎨</div>
+    <h3 style="margin-bottom: 15px;">No artworks yet!</h3>
+    <p style="color: var(--text-light); margin-bottom: 20px;">Start your creative journey by uploading your first piece.</p>
+    <a href="{% url 'upload' %}" class="btn btn-primary">Upload Your First Artwork</a>
+</div>
+{% endif %}
+
+{% endblock %}

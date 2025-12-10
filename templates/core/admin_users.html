@@ -62,7 +62,7 @@
                 </thead>
                 <tbody>
                     {% for user in users %}
-                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                    <tr style="border-bottom: 1px solid var(--border-color);">
                         <td style="padding: 12px;">
                             <a href="{% url 'profile' username=user.username %}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
                                 {{ user.username }}
@@ -77,14 +77,14 @@
                         <td style="padding: 12px; text-align: center;">{{ user.comment_count }}</td>
                         <td style="padding: 12px; text-align: center;">
                             {% if user.is_active %}
-                                <span style="color: #00b894; font-weight: 600;">✓ Active</span>
+                                <span style="color: var(--success); font-weight: 600;">✓ Active</span>
                             {% else %}
-                                <span style="color: #ff7675; font-weight: 600;">✗ Inactive</span>
+                                <span style="color: var(--danger); font-weight: 600;">✗ Inactive</span>
                             {% endif %}
                         </td>
                         <td style="padding: 12px; text-align: center;">
                             {% if user.is_staff %}
-                                <span style="background: #e17055; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.85rem;">Staff</span>
+                                <span style="background: var(--accent-orange); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.85rem;">Staff</span>
                             {% else %}
                                 <span style="color: var(--text-light);">User</span>
                             {% endif %}

@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Content Reports - Admin - STARS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .status-pending {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+    
+    .status-reviewed {
+        background: var(--info-light);
+        color: var(--info);
+    }
+    
+    .status-dismissed {
+        background: var(--stat-bg);
+        color: var(--text-light);
+    }
+    
+    .status-resolved {
+        background: var(--success-light);
+        color: var(--success);
+    }
+    
+    .report-card {
+        padding: 20px;
+        background: var(--stat-bg);
+        border-radius: 12px;
+        color: var(--text-dark);
+    }
+    
+    .report-description {
+        color: var(--text-dark);
+    }
+    
+    .admin-notes-box {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-dark);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+            <h1>Content Reports</h1>
+            {% if pending_count > 0 %}
+            <span style="background: var(--danger); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; margin-left: 10px;">
+                {{ pending_count }} pending
+            </span>
+            {% endif %}
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">← Back to Dashboard</a>
+    </div>
+
+    <!-- Status Filter Tabs -->
+    <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+        <a href="?status=pending" class="btn {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline{% endif %}">
+            Pending
+        </a>
+        <a href="?status=reviewed" class="btn {% if status_filter == 'reviewed' %}btn-primary{% else %}btn-outline{% endif %}">
+            Under Review
+        </a>
+        <a href="?status=resolved" class="btn {% if status_filter == 'resolved' %}btn-primary{% else %}btn-outline{% endif %}">
+            Resolved
+        </a>
+        <a href="?status=all" class="btn {% if status_filter == 'all' %}btn-primary{% else %}btn-outline{% endif %}">
+            All
+        </a>
+    </div>
+
+    <!-- Reports List -->
+    <div class="card" style="padding: 30px;">
+        {% if reports %}
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for report in reports %}
+            <div style="padding: 20px; background: var(--stat-bg); border-radius: 12px; border-left: 4px solid {% if report.status == 'pending' %}var(--warning){% elif report.status == 'reviewed' %}var(--info){% elif report.status == 'dismissed' %}var(--text-light){% else %}var(--success){% endif %};">
+                <div style="display: flex; gap: 20px;">
+                    <!-- Artwork Preview -->
+                    <div style="flex-shrink: 0;">
+                        {% if report.artwork %}
+                        <a href="{% url 'detail' pk=report.artwork.id %}">
+                            <img src="{{ report.artwork.get_image_url }}" alt="{{ report.artwork.title }}" 
+                                 style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;">
+                        </a>
+                        {% else %}
+                        <div style="width: 120px; height: 120px; background: var(--danger-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--danger);">
+                            🗑️ Deleted
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Report Details -->
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3 style="margin: 0 0 5px 0;">
+                                    {% if report.artwork %}
+                                    <a href="{% url 'detail' pk=report.artwork.id %}" style="color: var(--text-dark); text-decoration: none;">
+                                        {{ report.artwork.title }}
+                                    </a>
+                                    {% else %}
+                                    <span style="color: var(--text-light); text-decoration: line-through;">{{ report.artwork_title_backup }}</span>
+                                    <span style="color: var(--danger); font-size: 0.8rem;"> (Deleted)</span>
+                                    {% endif %}
+                                </h3>
+                                <p style="color: var(--text-light); margin: 0 0 10px 0;">
+                                    {% if report.artwork %}
+                                    by <a href="{% url 'profile' username=report.artwork.artist.username %}" style="color: var(--primary);">{{ report.artwork.artist.username }}</a>
+                                    {% else %}
+                                    Artwork was removed
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <span class="status-badge status-{{ report.status }}">
+                                {{ report.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        <!-- Report Info -->
+                        <div style="margin-top: 10px;">
+                            <strong style="color: var(--danger);">{{ report.get_reason_display }}</strong>
+                            <span style="color: var(--text-light); font-size: 0.85rem; margin-left: 10px;">
+                                Reported by {{ report.reporter.username }} • {{ report.created_at|timesince }} ago
+                            </span>
+                        </div>
+                        
+                        {% if report.description %}
+                        <p style="margin: 10px 0 0 0; color: var(--text-dark); font-size: 0.9rem;">
+                            "{{ report.description }}"
+                        </p>
+                        {% endif %}
+                        
+                        {% if report.admin_notes %}
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px;">
+                            <small style="color: var(--text-light);">Admin Notes:</small>
+                            <p style="margin: 5px 0 0 0; font-size: 0.9rem;">{{ report.admin_notes }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Actions -->
+                        {% if report.status == 'pending' or report.status == 'reviewed' %}
+                        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <form method="POST" action="{% url 'admin_report_action' report_id=report.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="dismiss">
+                                <button type="submit" class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem;">
+                                    ✓ Dismiss
+                                </button>
+                            </form>
+                            
+                            <form method="POST" action="{% url 'admin_report_action' report_id=report.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="review">
+                                <button type="submit" class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem; border-color: var(--info); color: var(--info);">
+                                    📋 Mark Under Review
+                                </button>
+                            </form>
+                            
+                            <form method="POST" action="{% url 'admin_report_action' report_id=report.id %}" style="display: inline;" 
+                                  onsubmit="return confirm('Are you sure you want to DELETE this artwork? This cannot be undone.');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_artwork">
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 15px; font-size: 0.85rem;">
+                                    🗑️ Delete Artwork
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div style="margin-top: 10px; color: var(--text-light); font-size: 0.85rem;">
+                            Resolved by {{ report.resolved_by.username }} • {{ report.resolved_at|timesince }} ago
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px; color: var(--text-light);">
+            <p style="font-size: 3rem; margin-bottom: 15px;">✅</p>
+            <p>No reports to show.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

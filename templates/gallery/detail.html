@@ -5,7 +5,7 @@
 <div style="max-width: 900px; margin: 0 auto;">
     <!-- Artwork Display -->
     <div class="card" style="margin-bottom: 30px;">
-        <img src="{{ artwork.image }}" alt="{{ artwork.title }}" style="width: 100%; height: auto; max-height: 600px; object-fit: contain;">
+        <img src="{{ artwork.get_image_url }}" alt="{{ artwork.title }}" style="width: 100%; height: auto; max-height: 600px; object-fit: contain;">
         
         <div style="padding: 30px;">
             <div class="flex-between" style="margin-bottom: 20px;">
@@ -39,7 +39,7 @@
                     </button>
                 </form>
                 {% else %}
-                <div style="color: #ff7675; font-size: 2rem;">
+                <div style="color: var(--danger); font-size: 2rem;">
                     ♥ {{ artwork.likes.count }}
                 </div>
                 {% endif %}
@@ -55,6 +55,25 @@
                 {% for tag in artwork.tags.all %}
                     <a href="{% url 'feed' %}?tag={{ tag.slug }}" class="tag-pill">#{{ tag.name }}</a>
                 {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Owner Actions -->
+            {% if is_owner %}
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px;">
+                <a href="{% url 'edit_artwork' pk=artwork.id %}" class="btn btn-outline" style="padding: 10px 20px;">
+                    ✏️ Edit
+                </a>
+                <a href="{% url 'delete_artwork' pk=artwork.id %}" class="btn btn-danger" style="padding: 10px 20px;">
+                    🗑️ Delete
+                </a>
+            </div>
+            {% elif user.is_authenticated %}
+            <!-- Report Button (non-owners only) -->
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <a href="{% url 'report_artwork' artwork_id=artwork.id %}" class="btn btn-outline" style="padding: 8px 16px; color: var(--text-light); border-color: var(--text-light);">
+                    🚩 Report
+                </a>
             </div>
             {% endif %}
         </div>

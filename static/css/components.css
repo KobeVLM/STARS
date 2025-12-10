@@ -35,6 +35,67 @@
     box-shadow: 0 4px 10px rgba(112, 132, 217, 0.3);
 }
 
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Alerts --- */
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: var(--success-light);
+    color: var(--success-dark);
+    border-left: 4px solid var(--success);
+}
+
+.alert-error, .alert-danger {
+    background: var(--danger-light);
+    color: var(--danger-dark);
+    border-left: 4px solid var(--danger);
+}
+
+.alert-info {
+    background: var(--info-light);
+    color: #003a8c;
+    border-left: 4px solid var(--info);
+}
+
+.alert-warning {
+    background: var(--warning-light);
+    color: #874d00;
+    border-left: 4px solid var(--warning);
+}
+
+/* --- Settings Card --- */
+.settings-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(112, 132, 217, 0.2);
+    box-shadow: var(--shadow);
+    padding: 40px;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    color: var(--primary-dark);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--gold-primary);
+}
+
 .btn-like {
     background: transparent;
     border: none;
@@ -57,7 +118,7 @@
 
 /* --- Cards --- */
 .card {
-    background: #ffffff;
+    background: var(--card-bg);
     border-radius: var(--border-radius);
     border: 1px solid rgba(112, 132, 217, 0.2);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);

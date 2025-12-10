@@ -14,20 +14,156 @@
     <link rel="stylesheet" href="{% static 'css/profile.css' %}">
     {% block extra_css %}{% endblock %}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Gamification Styles -->
+    <style>
+        /* XP Toast */
+        .xp-toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+            z-index: 10000;
+            animation: slideInRight 0.4s ease, fadeOut 0.4s ease 2.6s forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        /* Level Up Modal */
+        .level-up-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .level-up-content {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            animation: scaleIn 0.4s ease;
+            max-width: 400px;
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .level-up-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: bounce 0.6s ease infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            z-index: 10002;
+            animation: confetti-fall 3s linear forwards;
+        }
+        
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Footer */
+        .site-footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 40px 20px;
+            margin-top: 60px;
+            text-align: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
     {% load static %}
-    <nav class="flex-between" style="padding: 15px 40px; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+    <script>
+        // Apply dark mode immediately to prevent flash
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+    <nav class="flex-between" style="padding: 15px 40px; background: var(--nav-bg); box-shadow: 0 4px 20px rgba(0,0,0,0.05); transition: background var(--transition-speed);">
         <div class="logo">
-            <h2><a href="{% url 'landing' %}" style="text-decoration: none; color: inherit;">STARS</a></h2>
+            <h2>
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" style="text-decoration: none; color: inherit;">STARS</a>
+                {% else %}
+                <a href="{% url 'landing' %}" style="text-decoration: none; color: inherit;">STARS</a>
+                {% endif %}
+            </h2>
         </div>
 
-        <!-- Search Bar -->
+        <!-- Search Bar - Hide on landing/welcome for guests -->
+        {% if user.is_authenticated or request.resolver_match.url_name not in 'landing,welcome,login,register' %}
         <form action="{% url 'feed' %}" method="GET" class="search-form">
             <input type="text" name="q" placeholder="Search art or artists..." class="form-input"
-                value="{{ search_query|default:'' }}">
+                value="{{ search_query|default:'' }}" style="transition: all var(--transition-speed);">
         </form>
+        {% else %}
+        <div></div><!-- Spacer for flex layout -->
+        {% endif %}
 
         <div class="user-menu flex-row">
             {% if user.is_authenticated %}
@@ -67,12 +203,35 @@
             <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
             <a href="{% url 'register' %}" class="btn btn-outline">Sign Up</a>
             {% endif %}
+            
+            <!-- Dark Mode Toggle -->
+            <button id="darkModeToggle" class="btn btn-outline" style="padding: 8px 12px; font-size: 1rem;" title="Toggle Dark Mode">
+                <span id="darkModeIcon">🌙</span>
+            </button>
         </div>
     </nav>
 
     <main class="container">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" style="transition: background var(--transition-speed);">
+        <div class="footer-links">
+            <a href="{% url 'feed' %}">Browse Art</a>
+            <a href="{% url 'leaderboard' %}">🏆 Leaderboard</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'upload' %}">Upload</a>
+            <a href="{% url 'profile' username=user.username %}">My Profile</a>
+            {% else %}
+            <a href="{% url 'register' %}">Join the Community</a>
+            {% endif %}
+        </div>
+        <p style="opacity: 0.6; font-size: 0.9rem;">
+            © 2024 STARS - Student Artist Space. Built with 💜 for student artists.
+        </p>
+    </footer>
 
     <!-- Toast Notification Container -->
     <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
@@ -102,12 +261,123 @@
             }, duration);
         }
 
+        // XP Gain Toast
+        function showXpGain(amount, action) {
+            const toast = document.createElement('div');
+            toast.className = 'xp-toast';
+            toast.innerHTML = `
+                <span style="font-size: 1.5rem;">⭐</span>
+                <span>+${amount} XP for ${action}!</span>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Level Up Celebration
+        function showLevelUp(newLevel) {
+            // Create confetti
+            const colors = ['#667eea', '#764ba2', '#f39c12', '#e74c3c', '#2ecc71', '#3498db'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 50);
+            }
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'level-up-modal';
+            modal.innerHTML = `
+                <div class="level-up-content">
+                    <div class="level-up-icon">🎉</div>
+                    <h2 style="color: var(--primary); margin-bottom: 10px;">LEVEL UP!</h2>
+                    <p style="font-size: 3rem; font-weight: 700; margin-bottom: 20px;">Level ${newLevel}</p>
+                    <p style="color: var(--text-light); margin-bottom: 25px;">Keep up the amazing work! 🚀</p>
+                    <button onclick="this.closest('.level-up-modal').remove()" class="btn btn-primary" style="padding: 12px 30px;">
+                        Awesome!
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Auto close after 5 seconds
+            setTimeout(() => modal.remove(), 5000);
+        }
+
         // Display Django messages as toasts
         {% if messages %}
             {% for message in messages %}
                 showToast('{{ message|safe }}', '{{ message.tags|default:"info" }}', 3000);
             {% endfor %}
         {% endif %}
+
+        // Check for XP gain in session
+        {% if xp_gained %}
+            showXpGain({{ xp_gained }}, '{{ xp_action|default:"your action" }}');
+        {% endif %}
+
+        // Check for level up
+        {% if level_up %}
+            setTimeout(() => showLevelUp({{ level_up }}), 500);
+        {% endif %}
+        
+        // Badge Unlock Popup
+        function showBadgeUnlock(badge) {
+            const modal = document.createElement('div');
+            modal.className = 'level-up-modal';
+            modal.innerHTML = `
+                <div class="level-up-content" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div style="font-size: 4rem; margin-bottom: 10px;">${badge.icon}</div>
+                    <h2 style="color: white; margin-bottom: 10px;">Badge Unlocked!</h2>
+                    <p style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 10px;">${badge.name}</p>
+                    <p style="color: rgba(255,255,255,0.8); margin-bottom: 15px;">${badge.description}</p>
+                    <p style="font-size: 1.2rem; color: #fbbf24; margin-bottom: 20px;">+${badge.xp} XP</p>
+                    <button onclick="this.closest('.level-up-modal').remove()" class="btn" style="background: white; color: #667eea; padding: 12px 30px;">
+                        Awesome!
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            setTimeout(() => modal.remove(), 6000);
+        }
+        
+        // Check for new badges
+        {% if new_badges %}
+            let badgeDelay = {% if level_up %}3000{% else %}500{% endif %};
+            {% for badge in new_badges %}
+            setTimeout(() => showBadgeUnlock({
+                name: '{{ badge.name }}',
+                icon: '{{ badge.icon }}',
+                xp: {{ badge.xp }},
+                description: '{{ badge.description }}'
+            }), badgeDelay);
+            badgeDelay += 2500;
+            {% endfor %}
+        {% endif %}
+        
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = document.getElementById('darkModeIcon');
+        
+        function updateDarkModeIcon() {
+            const isDark = document.body.classList.contains('dark-mode');
+            darkModeIcon.textContent = isDark ? '☀️' : '🌙';
+        }
+        
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            updateDarkModeIcon();
+        });
+        
+        // Set initial icon state
+        updateDarkModeIcon();
     </script>
 
     {% block extra_js %}{% endblock %}

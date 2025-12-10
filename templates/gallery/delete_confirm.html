@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 60px auto; text-align: center;">
+    <div class="card" style="padding: 40px;">
+        <div style="font-size: 4rem; margin-bottom: 20px;">⚠️</div>
+        <h2 style="margin-bottom: 20px;">Delete "{{ artwork.title }}"?</h2>
+        <p style="color: var(--text-light); margin-bottom: 30px;">
+            This action cannot be undone. Your artwork and all its likes/comments will be permanently removed.
+        </p>
+        
+        <div style="margin-bottom: 20px;">
+            <img src="{{ artwork.get_image_url }}" alt="{{ artwork.title }}" 
+                 style="max-width: 100%; max-height: 200px; border-radius: var(--border-radius); object-fit: cover;">
+        </div>
+        
+        <form method="POST" style="display: flex; gap: 15px; justify-content: center;">
+            {% csrf_token %}
+            <a href="{% url 'detail' pk=artwork.id %}" class="btn btn-outline">Cancel</a>
+            <button type="submit" class="btn" style="background: #e74c3c; color: white;">
+                Yes, Delete Forever
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

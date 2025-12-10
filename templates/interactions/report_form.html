@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Report Artwork - STARS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .report-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .artwork-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: var(--border-radius);
+        object-fit: cover;
+    }
+    
+    .report-info h1 {
+        margin-bottom: 5px;
+        font-size: 1.5rem;
+    }
+    
+    .report-info p {
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+    
+    .reason-options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+    
+    .reason-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px;
+        background: var(--stat-bg);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+    
+    .reason-option:hover {
+        background: var(--gold-light);
+        border-color: var(--gold-primary);
+    }
+    
+    .reason-option input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--danger);
+    }
+    
+    .reason-option.selected {
+        background: var(--gold-light);
+        border-color: var(--gold-primary);
+    }
+    
+    .reason-label {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+    
+    .warning-box {
+        background: var(--warning-light);
+        border-left: 4px solid var(--warning);
+        padding: 15px;
+        margin-bottom: 25px;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .warning-box p {
+        margin: 0;
+        color: #874d00;
+        font-size: 0.9rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="report-header">
+        <img src="{{ artwork.get_image_url }}" alt="{{ artwork.title }}" class="artwork-preview">
+        <div class="report-info">
+            <h1>🚩 Report Artwork</h1>
+            <p><strong>{{ artwork.title }}</strong> by {{ artwork.artist.username }}</p>
+        </div>
+    </div>
+    
+    <div class="warning-box">
+        <p>⚠️ <strong>Please only report content that violates our community guidelines.</strong> False reports may result in action against your account.</p>
+    </div>
+    
+    <div class="card" style="padding: 30px;">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <h3 style="margin-bottom: 20px;">Why are you reporting this?</h3>
+            
+            <div class="reason-options">
+                <label class="reason-option">
+                    <input type="radio" name="reason" value="inappropriate" required>
+                    <div>
+                        <div class="reason-label">🔞 Inappropriate Content</div>
+                        <small style="color: var(--text-light);">Nudity, violence, or graphic content</small>
+                    </div>
+                </label>
+                
+                <label class="reason-option">
+                    <input type="radio" name="reason" value="spam">
+                    <div>
+                        <div class="reason-label">📢 Spam</div>
+                        <small style="color: var(--text-light);">Advertisements or repetitive content</small>
+                    </div>
+                </label>
+                
+                <label class="reason-option">
+                    <input type="radio" name="reason" value="harassment">
+                    <div>
+                        <div class="reason-label">😠 Harassment</div>
+                        <small style="color: var(--text-light);">Bullying, threats, or hate speech</small>
+                    </div>
+                </label>
+                
+                <label class="reason-option">
+                    <input type="radio" name="reason" value="copyright">
+                    <div>
+                        <div class="reason-label">©️ Copyright Violation</div>
+                        <small style="color: var(--text-light);">Stolen artwork or plagiarism</small>
+                    </div>
+                </label>
+                
+                <label class="reason-option">
+                    <input type="radio" name="reason" value="other">
+                    <div>
+                        <div class="reason-label">❓ Other</div>
+                        <small style="color: var(--text-light);">Something else not listed above</small>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Additional Details (optional)</label>
+                <textarea name="description" id="description" class="form-input" rows="4" placeholder="Provide any additional context that might help us review this report..."></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger" style="flex: 1;">Submit Report</button>
+                <a href="{% url 'detail' pk=artwork.id %}" class="btn btn-outline" style="flex: 1; text-align: center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Visual feedback when selecting reason
+    document.querySelectorAll('.reason-option input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.querySelectorAll('.reason-option').forEach(opt => opt.classList.remove('selected'));
+            this.closest('.reason-option').classList.add('selected');
+        });
+    });
+</script>
+{% endblock %}

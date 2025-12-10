@@ -8,8 +8,7 @@
     {% if messages %}
     <div style="margin-bottom: 20px;">
         {% for message in messages %}
-        <div
-            style="padding: 15px; background: {% if message.tags == 'success' %}#d4edda{% elif message.tags == 'info' %}#d1ecf1{% else %}#f8d7da{% endif %}; color: {% if message.tags == 'success' %}#155724{% elif message.tags == 'info' %}#0c5460{% else %}#721c24{% endif %}; border-radius: 8px; margin-bottom: 10px;">
+        <div class="alert alert-{{ message.tags|default:'info' }}">
             {{ message }}
         </div>
         {% endfor %}

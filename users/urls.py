@@ -9,4 +9,9 @@ urlpatterns = [
     path('profile-edit/', views.profile_edit, name='profile_edit'),
     path('settings/', views.account_settings, name='account_settings'),
     path('profile/<str:username>/', views.profile_view, name='profile'),
+    path('profile/<str:username>/followers/', views.followers_list, name='followers_list'),
+    path('profile/<str:username>/following/', views.following_list, name='following_list'),
+    path('follow/<str:username>/', views.toggle_follow, name='toggle_follow'),
 ]
+
+

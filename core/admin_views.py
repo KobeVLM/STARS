@@ -3,9 +3,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
+from django.utils import timezone
 from users.models import CustomUser
 from gallery.models import Artwork
-from interactions.models import Like, Comment
+from interactions.models import Like, Comment, Report
 
 
 @staff_member_required
@@ -127,3 +128,77 @@ def admin_user_edit(request, user_id):
         'user_stats': user_stats,
     }
     return render(request, 'core/admin_user_edit.html', context)
+
+
+@staff_member_required
+def admin_reports(request):
+    """Admin view for content moderation - review reported artworks"""
+    status_filter = request.GET.get('status', 'pending')
+    
+    reports = Report.objects.select_related('reporter', 'artwork', 'artwork__artist', 'resolved_by')
+    
+    if status_filter == 'pending':
+        reports = reports.filter(status='pending')
+    elif status_filter == 'reviewed':
+        reports = reports.filter(status='reviewed')
+    elif status_filter == 'resolved':
+        reports = reports.filter(status__in=['dismissed', 'resolved'])
+    # 'all' shows everything
+    
+    # Count pending reports for badge
+    pending_count = Report.objects.filter(status='pending').count()
+    
+    context = {
+        'reports': reports,
+        'status_filter': status_filter,
+        'pending_count': pending_count,
+    }
+    return render(request, 'core/admin_reports.html', context)
+
+
+@staff_member_required
+def admin_report_action(request, report_id):
+    """Handle admin action on a report"""
+    report = get_object_or_404(Report, pk=report_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        admin_notes = request.POST.get('admin_notes', '')
+        
+        if action == 'dismiss':
+            report.status = 'dismissed'
+            report.admin_notes = admin_notes
+            report.resolved_at = timezone.now()
+            report.resolved_by = request.user
+            report.save()
+            messages.success(request, f'Report dismissed.')
+        
+        elif action == 'warn':
+            report.status = 'resolved'
+            report.admin_notes = admin_notes
+            report.resolved_at = timezone.now()
+            report.resolved_by = request.user
+            report.save()
+            messages.success(request, f'Report resolved. Consider messaging the artist about the issue.')
+        
+        elif action == 'delete_artwork':
+            artwork_title = report.artwork.title
+            artwork = report.artwork  # Store reference before deleting
+            # Save backup info BEFORE deleting
+            report.artwork_title_backup = artwork_title
+            report.status = 'resolved'
+            report.admin_notes = f"Artwork deleted by admin. {admin_notes}"
+            report.resolved_at = timezone.now()
+            report.resolved_by = request.user
+            report.save()
+            # Now delete the artwork (report stays because we saved it first, and artwork is SET_NULL)
+            artwork.delete()
+            messages.success(request, f'Artwork "{artwork_title}" has been deleted.')
+        
+        elif action == 'review':
+            report.status = 'reviewed'
+            report.admin_notes = admin_notes
+            report.save()
+            messages.info(request, f'Report marked as under review.')
+    
+    return redirect('admin_reports')

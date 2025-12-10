@@ -35,3 +35,31 @@ class ArtworkForm(forms.ModelForm):
                 'placeholder': 'Describe your artwork...'
             }),
         }
+
+
+class ArtworkEditForm(forms.ModelForm):
+    """Form for editing artwork (no image change allowed)"""
+    tags_input = forms.CharField(
+        required=False, 
+        widget=forms.TextInput(attrs={
+            'placeholder': 'e.g. anime, sketch, oc', 
+            'class': 'form-input'
+        }),
+        label='Tags (comma separated)'
+    )
+
+    class Meta:
+        model = Artwork
+        fields = ['title', 'description']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Give your artwork a title'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-input', 
+                'rows': 4,
+                'placeholder': 'Describe your artwork...'
+            }),
+        }
+

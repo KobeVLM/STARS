@@ -1,5 +1,5 @@
 :root {
-    /* Starry Night Palette */
+    /* Starry Night Palette - Light Mode */
     --primary-dark: #24305D;
     /* Deep Navy */
     --primary-mid: #4154A0;
@@ -19,11 +19,165 @@
     --bg-color: linear-gradient(180deg, #24305D 0%, #4154A0 40%, #7084D9 70%, #D6E5E5 100%);
     --card-bg: rgba(255, 255, 255, 0.95);
     --text-dark: #24305D;
-    --text-light: #D6E5E5;
+    --text-light: #6b7280;
     --text-accent: #4154A0;
+    --body-bg: #f8fafc;
+    --nav-bg: #ffffff;
+    --footer-bg: #1a1a2e;
+    
+    /* State Colors */
+    --danger: #e74c3c;
+    --danger-light: #fff1f0;
+    --danger-dark: #721c24;
+    --success: #52c41a;
+    --success-light: #f6ffed;
+    --success-dark: #155724;
+    --warning: #faad14;
+    --warning-light: #fffbe6;
+    --info: #1890ff;
+    --info-light: #e6f7ff;
+    
+    /* Admin/Accent Colors */
+    --accent-orange: #e17055;
+    --accent-teal: #00b894;
+    --border-color: #f0f0f0;
+    --stat-bg: #f8fafc;
 
     /* Layout */
     --border-radius: 20px;
     --shadow: 0 8px 30px rgba(36, 48, 93, 0.2);
     --gold-glow: 0 0 30px rgba(216, 206, 115, 0.6);
+    
+    /* Transitions */
+    --transition-speed: 0.3s;
 }
+
+/* Dark Mode */
+body.dark-mode {
+    --primary-dark: #a5b4fc;
+    --primary-mid: #818cf8;
+    --primary-light: #6366f1;
+    --accent-light: #1e1b4b;
+    --gold-primary: #fbbf24;
+    --gold-light: #fcd34d;
+    
+    --primary: #a5b4fc;
+    --secondary: #818cf8;
+    --card-bg: #1e1b4b;
+    --text-dark: #f1f5f9;
+    --text-light: #94a3b8;
+    --text-accent: #a5b4fc;
+    --body-bg: #0f0d1a;
+    --nav-bg: #1a1625;
+    --footer-bg: #0a0812;
+    --input-bg: #2d2a4a;
+    --input-text: #f1f5f9;
+    
+    /* Admin/Accent Colors - Dark Mode */
+    --stat-bg: #2d2a4a;
+    --border-color: #4a4670;
+    
+    /* State Colors - Dark Mode Backgrounds */
+    --danger-light: #4a2a2d;
+    --success-light: #1a3a1a;
+    --warning-light: #3a3020;
+    --info-light: #1a2a4a;
+    --danger-dark: #fca5a5;
+    --success-dark: #86efac;
+}
+
+body.dark-mode .card {
+    background: var(--card-bg);
+    border-color: rgba(165, 180, 252, 0.2);
+    color: var(--text-dark);
+}
+
+body.dark-mode .card-title,
+body.dark-mode .card h3,
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3 {
+    color: var(--text-dark);
+}
+
+body.dark-mode nav {
+    background: var(--nav-bg) !important;
+}
+
+body.dark-mode .site-footer {
+    background: var(--footer-bg);
+}
+
+/* Dark Mode Form Inputs - COMPREHENSIVE FIX */
+body.dark-mode input[type="text"],
+body.dark-mode input[type="email"],
+body.dark-mode input[type="password"],
+body.dark-mode input[type="search"],
+body.dark-mode input[type="number"],
+body.dark-mode input[type="url"],
+body.dark-mode input[type="tel"],
+body.dark-mode textarea,
+body.dark-mode select,
+body.dark-mode .form-input,
+body.dark-mode .form-group input,
+body.dark-mode .form-group textarea,
+body.dark-mode .form-group select {
+    background: #2d2a4a !important;
+    border-color: rgba(165, 180, 252, 0.3) !important;
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode input:focus,
+body.dark-mode textarea:focus,
+body.dark-mode select:focus {
+    border-color: var(--primary-light) !important;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3) !important;
+}
+
+body.dark-mode .level-up-content {
+    background: var(--card-bg);
+    color: var(--text-dark);
+}
+
+body.dark-mode .btn-outline {
+    border-color: var(--primary-light);
+    color: var(--primary-light);
+}
+
+body.dark-mode .btn-primary {
+    background: var(--gold-light);
+    color: #1a1625;
+}
+
+body.dark-mode label {
+    color: var(--text-dark);
+}
+
+body.dark-mode .stat-card,
+body.dark-mode .xp-section,
+body.dark-mode .dashboard-hero {
+    color: var(--text-dark);
+}
+
+body.dark-mode .stat-value {
+    color: var(--text-dark);
+}
+
+body.dark-mode .stat-label {
+    color: var(--text-light);
+}
+
+body.dark-mode a {
+    color: var(--primary-light);
+}
+
+body.dark-mode .profile-header,
+body.dark-mode .profile-info {
+    color: var(--text-dark);
+}
+

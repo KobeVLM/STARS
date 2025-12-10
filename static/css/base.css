@@ -6,11 +6,12 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: var(--bg-color);
+    background: var(--body-bg);
     color: var(--text-dark);
     line-height: 1.6;
     min-height: 100vh;
     position: relative;
+    transition: background var(--transition-speed), color var(--transition-speed);
 }
 
 /* --- Starfield Background --- */
