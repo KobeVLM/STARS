@@ -7,6 +7,7 @@ from .models import Artwork, Tag, Category
 from .forms import ArtworkForm, ArtworkEditForm
 from interactions.forms import CommentForm
 import os
+import uuid
 import logging
 
 # Get an instance of a logger
@@ -85,7 +86,9 @@ def upload_artwork(request):
                     if supabase:
                         try:
                             # Define a unique path for the image in the bucket
-                            file_path = f"artworks/{request.user.username}/{image_file.name}"
+                            unique_id = uuid.uuid4().hex[:8]
+                            filename = f"{unique_id}_{image_file.name}"
+                            file_path = f"artworks/{request.user.username}/{filename}"
                             
                             # Upload to Supabase Storage
                             supabase.storage.from_("artworks").upload(
