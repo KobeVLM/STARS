@@ -47,6 +47,12 @@ def explore_feed(request):
     tag_slug = request.GET.get('tag')
     if tag_slug:
         artworks = artworks.filter(tags__slug=tag_slug)
+    
+    # Get IDs of artworks the current user has liked
+    user_liked_ids = []
+    if request.user.is_authenticated:
+        from interactions.models import Like
+        user_liked_ids = list(Like.objects.filter(user=request.user).values_list('artwork_id', flat=True))
 
     context = {
         'artworks': artworks,
@@ -55,6 +61,7 @@ def explore_feed(request):
         'tags': Tag.objects.all(),
         'current_tag': tag_slug,
         'search_query': query,
+        'user_liked_ids': user_liked_ids,
     }
     return render(request, 'gallery/feed.html', context)
 

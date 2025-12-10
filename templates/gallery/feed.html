@@ -37,7 +37,18 @@
         </a>
         <div class="card-content">
             <h3 class="card-title">{{ art.title }}</h3>
-            <small class="card-meta">by <a href="{% url 'profile' username=art.artist.username %}" style="color: var(--primary); text-decoration: none;">{{ art.artist.username }}</a></small>
+            
+            <!-- Artist Info with Avatar -->
+            <div class="flex-row" style="gap: 8px; align-items: center; margin-top: 8px;">
+                <a href="{% url 'profile' username=art.artist.username %}">
+                    {% if art.artist.avatar %}
+                    <img src="{{ art.artist.avatar.url }}" alt="{{ art.artist.username }}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-light);">
+                    {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" alt="{{ art.artist.username }}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-light);">
+                    {% endif %}
+                </a>
+                <a href="{% url 'profile' username=art.artist.username %}" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">{{ art.artist.username }}</a>
+            </div>
             
             <!-- Category Badge -->
             {% if art.category %}
@@ -48,17 +59,28 @@
             </div>
             {% endif %}
             
-            <div class="flex-between" style="margin-top: 15px;">
+            <div class="flex-between" style="margin-top: 15px; align-items: center;">
                 <div class="tags">
                     {% for tag in art.tags.all|slice:":2" %}
                         <a href="?tag={{ tag.slug }}" class="tag-pill" style="font-size: 0.75rem; padding: 2px 8px;">#{{ tag.name }}</a>
                     {% endfor %}
                 </div>
-                <!-- Like Count -->
-                <div class="flex-row" style="gap: 5px;">
-                    <span style="color: var(--danger);">♥</span> 
-                    <span>{{ art.likes.count }}</span>
-                </div>
+                
+                <!-- Like Button -->
+                {% if user.is_authenticated %}
+                <button type="button" class="like-btn {% if art.id in user_liked_ids %}liked{% endif %}" 
+                        data-artwork-id="{{ art.id }}" 
+                        onclick="toggleLike({{ art.id }}, this)"
+                        title="{% if art.id in user_liked_ids %}Unlike{% else %}Like{% endif %}">
+                    <span class="heart">{% if art.id in user_liked_ids %}❤️{% else %}🤍{% endif %}</span>
+                    <span class="count">{{ art.likes.count }}</span>
+                </button>
+                {% else %}
+                <a href="{% url 'login' %}" class="like-btn" title="Login to like">
+                    <span class="heart">🤍</span>
+                    <span class="count">{{ art.likes.count }}</span>
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -70,5 +92,80 @@
     <p style="margin-top: 10px;">{% if user.is_authenticated %}Be the first to <a href="{% url 'upload' %}">upload something</a>!{% else %}<a href="{% url 'register' %}">Sign up</a> to start sharing!{% endif %}</p>
 </div>
 {% endif %}
+
+<style>
+.like-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.like-btn:hover {
+    background: rgba(255, 100, 100, 0.1);
+    transform: scale(1.05);
+}
+
+.like-btn .heart {
+    font-size: 1.4rem;
+    transition: transform 0.2s ease;
+}
+
+.like-btn:hover .heart {
+    transform: scale(1.2);
+}
+
+.like-btn.liked .heart {
+    animation: heartPop 0.3s ease;
+}
+
+@keyframes heartPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.like-btn .count {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+</style>
+
+<script>
+function toggleLike(artworkId, btn) {
+    fetch(`/interactions/like/${artworkId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const heart = btn.querySelector('.heart');
+        const count = btn.querySelector('.count');
+        
+        if (data.liked) {
+            btn.classList.add('liked');
+            heart.textContent = '❤️';
+            btn.title = 'Unlike';
+        } else {
+            btn.classList.remove('liked');
+            heart.textContent = '🤍';
+            btn.title = 'Like';
+        }
+        count.textContent = data.like_count;
+    })
+    .catch(err => console.error('Like failed:', err));
+}
+</script>
 {% endblock %}
 

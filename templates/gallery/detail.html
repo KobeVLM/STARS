@@ -32,16 +32,17 @@
                 
                 <!-- Like Button -->
                 {% if user.is_authenticated %}
-                <form action="{% url 'toggle_like' artwork_id=artwork.id %}" method="POST" style="margin: 0;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-like {% if user_has_liked %}liked{% endif %}" style="font-size: 2rem;">
-                        ♥ <span style="font-size: 1rem;">{{ artwork.likes.count }}</span>
-                    </button>
-                </form>
+                <button type="button" class="like-btn-large {% if user_has_liked %}liked{% endif %}" 
+                        onclick="toggleLikeDetail({{ artwork.id }}, this)"
+                        title="{% if user_has_liked %}Unlike{% else %}Like{% endif %}">
+                    <span class="heart">{% if user_has_liked %}❤️{% else %}🤍{% endif %}</span>
+                    <span class="count">{{ artwork.likes.count }}</span>
+                </button>
                 {% else %}
-                <div style="color: var(--danger); font-size: 2rem;">
-                    ♥ {{ artwork.likes.count }}
-                </div>
+                <a href="{% url 'login' %}" class="like-btn-large" title="Login to like">
+                    <span class="heart">🤍</span>
+                    <span class="count">{{ artwork.likes.count }}</span>
+                </a>
                 {% endif %}
             </div>
             
@@ -202,5 +203,79 @@ document.getElementById('shareModal').addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeShareModal();
 });
+
+// Toggle Like AJAX
+function toggleLikeDetail(artworkId, btn) {
+    fetch(`/interactions/like/${artworkId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const heart = btn.querySelector('.heart');
+        const count = btn.querySelector('.count');
+        
+        if (data.liked) {
+            btn.classList.add('liked');
+            heart.textContent = '❤️';
+            btn.title = 'Unlike';
+        } else {
+            btn.classList.remove('liked');
+            heart.textContent = '🤍';
+            btn.title = 'Like';
+        }
+        count.textContent = data.like_count;
+    })
+    .catch(err => console.error('Like failed:', err));
+}
 </script>
+
+<style>
+.like-btn-large {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 12px 20px;
+    border-radius: 25px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.like-btn-large:hover {
+    background: rgba(255, 100, 100, 0.15);
+    transform: scale(1.05);
+}
+
+.like-btn-large .heart {
+    font-size: 2.5rem;
+    transition: transform 0.2s ease;
+}
+
+.like-btn-large:hover .heart {
+    transform: scale(1.2);
+}
+
+.like-btn-large.liked .heart {
+    animation: heartPop 0.3s ease;
+}
+
+@keyframes heartPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
+.like-btn-large .count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+</style>
 {% endblock %}
