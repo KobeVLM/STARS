@@ -1,5 +1,5 @@
 from django import forms
-from .models import Artwork
+from .models import Artwork, Category
 
 
 class ArtworkForm(forms.ModelForm):
@@ -19,11 +19,18 @@ class ArtworkForm(forms.ModelForm):
         required=True, 
         widget=forms.FileInput(attrs={'class': 'form-file'})
     )
+    
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        empty_label="Select a category..."
+    )
 
     class Meta:
         model = Artwork
         # 'image' is removed from here because we handle it manually
-        fields = ['title', 'description']
+        fields = ['title', 'description', 'category']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-input',
@@ -47,10 +54,17 @@ class ArtworkEditForm(forms.ModelForm):
         }),
         label='Tags (comma separated)'
     )
+    
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        empty_label="Select a category..."
+    )
 
     class Meta:
         model = Artwork
-        fields = ['title', 'description']
+        fields = ['title', 'description', 'category']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-input',
@@ -62,4 +76,3 @@ class ArtworkEditForm(forms.ModelForm):
                 'placeholder': 'Describe your artwork...'
             }),
         }
-

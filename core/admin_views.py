@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
 from django.utils import timezone
-from users.models import CustomUser
+from users.models import CustomUser, Badge
 from gallery.models import Artwork
 from interactions.models import Like, Comment, Report
 
@@ -89,16 +89,24 @@ def admin_user_edit(request, user_id):
         action = request.POST.get('action')
         
         if action == 'toggle_active':
-            user_to_edit.is_active = not user_to_edit.is_active
-            user_to_edit.save()
-            status = 'activated' if user_to_edit.is_active else 'deactivated'
-            messages.success(request, f'User {user_to_edit.username} has been {status}.')
+            # Prevent self-deactivation
+            if user_to_edit == request.user and user_to_edit.is_active:
+                messages.error(request, 'You cannot deactivate your own account.')
+            else:
+                user_to_edit.is_active = not user_to_edit.is_active
+                user_to_edit.save()
+                status = 'activated' if user_to_edit.is_active else 'deactivated'
+                messages.success(request, f'User {user_to_edit.username} has been {status}.')
         
         elif action == 'toggle_staff':
-            user_to_edit.is_staff = not user_to_edit.is_staff
-            user_to_edit.save()
-            status = 'granted' if user_to_edit.is_staff else 'revoked'
-            messages.success(request, f'Staff privileges {status} for {user_to_edit.username}.')
+            # Prevent self-demotion
+            if user_to_edit == request.user and user_to_edit.is_staff:
+                messages.error(request, 'You cannot revoke your own staff privileges.')
+            else:
+                user_to_edit.is_staff = not user_to_edit.is_staff
+                user_to_edit.save()
+                status = 'granted' if user_to_edit.is_staff else 'revoked'
+                messages.success(request, f'Staff privileges {status} for {user_to_edit.username}.')
         
         elif action == 'adjust_xp':
             xp_change = int(request.POST.get('xp_amount', 0))
@@ -202,3 +210,77 @@ def admin_report_action(request, report_id):
             messages.info(request, f'Report marked as under review.')
     
     return redirect('admin_reports')
+
+
+@staff_member_required
+def admin_badges(request):
+    """Admin badge management - list, create, edit badges"""
+    badges = Badge.objects.annotate(
+        users_count=Count('users')
+    ).order_by('criteria_type', 'criteria_value')
+    
+    # Handle form submission for creating new badge
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'create':
+            name = request.POST.get('name', '').strip()
+            description = request.POST.get('description', '').strip()
+            icon = request.POST.get('icon', '🏆').strip() or '🏆'
+            criteria_type = request.POST.get('criteria_type')
+            criteria_value = request.POST.get('criteria_value', 1)
+            xp_reward = request.POST.get('xp_reward', 50)
+            
+            if name and description and criteria_type:
+                try:
+                    Badge.objects.create(
+                        name=name,
+                        description=description,
+                        icon=icon,
+                        criteria_type=criteria_type,
+                        criteria_value=int(criteria_value),
+                        xp_reward=int(xp_reward)
+                    )
+                    messages.success(request, f'Badge "{name}" created successfully!')
+                except Exception as e:
+                    messages.error(request, f'Error creating badge: {str(e)}')
+            else:
+                messages.error(request, 'Please fill in all required fields.')
+            return redirect('admin_badges')
+    
+    # Get criteria type choices
+    criteria_choices = Badge._meta.get_field('criteria_type').choices
+    
+    context = {
+        'badges': badges,
+        'criteria_choices': criteria_choices,
+    }
+    return render(request, 'core/admin_badges.html', context)
+
+
+@staff_member_required
+def admin_badge_action(request, badge_id):
+    """Handle badge edit/delete actions"""
+    badge = get_object_or_404(Badge, id=badge_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'delete':
+            badge_name = badge.name
+            badge.delete()
+            messages.success(request, f'Badge "{badge_name}" deleted.')
+            return redirect('admin_badges')
+        
+        elif action == 'update':
+            badge.name = request.POST.get('name', badge.name).strip()
+            badge.description = request.POST.get('description', badge.description).strip()
+            badge.icon = request.POST.get('icon', badge.icon).strip() or '🏆'
+            badge.criteria_type = request.POST.get('criteria_type', badge.criteria_type)
+            badge.criteria_value = int(request.POST.get('criteria_value', badge.criteria_value))
+            badge.xp_reward = int(request.POST.get('xp_reward', badge.xp_reward))
+            badge.save()
+            messages.success(request, f'Badge "{badge.name}" updated.')
+            return redirect('admin_badges')
+    
+    return redirect('admin_badges')

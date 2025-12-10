@@ -31,9 +31,14 @@
             </div>
 
             <div class="form-group">
+                <label>Category *</label>
+                {{ form.category }}
+            </div>
+
+            <div class="form-group">
                 <label>{{ form.tags_input.label }}</label>
                 {{ form.tags_input }}
-                <small style="color: var(--text-light); display: block; margin-top: 5px;">Separate tags with commas</small>
+                <small style="color: var(--text-light); display: block; margin-top: 5px;">Optional: Separate tags with commas for additional filtering</small>
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem;">

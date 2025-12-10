@@ -15,6 +15,8 @@ urlpatterns = [
     path('admin-panel/users/<int:user_id>/', admin_views.admin_user_edit, name='admin_user_edit'),
     path('admin-panel/reports/', admin_views.admin_reports, name='admin_reports'),
     path('admin-panel/reports/<int:report_id>/', admin_views.admin_report_action, name='admin_report_action'),
+    path('admin-panel/badges/', admin_views.admin_badges, name='admin_badges'),
+    path('admin-panel/badges/<int:badge_id>/', admin_views.admin_badge_action, name='admin_badge_action'),
 ]
 
 

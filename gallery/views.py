@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
 from django.conf import settings as django_settings
-from .models import Artwork, Tag
+from .models import Artwork, Tag, Category
 from .forms import ArtworkForm, ArtworkEditForm
 from interactions.forms import CommentForm
 import os
@@ -26,15 +26,22 @@ if not getattr(django_settings, 'USE_LOCAL_STORAGE', False):
 
 
 def explore_feed(request):
-    """Main gallery feed with search and filtering"""
-    artworks = Artwork.objects.all().select_related('artist').prefetch_related('tags', 'likes')
+    """Main gallery feed with search, category, and tag filtering"""
+    artworks = Artwork.objects.all().select_related('artist', 'category').prefetch_related('tags', 'likes')
     
-    # Search by title or artist username
+    # Filter by category
+    category_slug = request.GET.get('category')
+    if category_slug:
+        artworks = artworks.filter(category__slug=category_slug)
+    
+    # Search by title, artist username, or tags
     query = request.GET.get('q')
     if query:
         artworks = artworks.filter(
-            Q(title__icontains=query) | Q(artist__username__icontains=query)
-        )
+            Q(title__icontains=query) | 
+            Q(artist__username__icontains=query) |
+            Q(tags__name__icontains=query)
+        ).distinct()
     
     # Filter by tag
     tag_slug = request.GET.get('tag')
@@ -43,6 +50,8 @@ def explore_feed(request):
 
     context = {
         'artworks': artworks,
+        'categories': Category.objects.all(),
+        'current_category': category_slug,
         'tags': Tag.objects.all(),
         'current_tag': tag_slug,
         'search_query': query,

@@ -3,8 +3,28 @@ from django.conf import settings
 from django.utils.text import slugify
 
 
+class Category(models.Model):
+    """Admin-managed category for structured artwork organization"""
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(unique=True, blank=True)
+    icon = models.CharField(max_length=10, default='🎨', help_text="Emoji icon for the category")
+    order = models.PositiveIntegerField(default=0, help_text="Display order (lower = first)")
+    
+    class Meta:
+        verbose_name_plural = "Categories"
+        ordering = ['order', 'name']
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.icon} {self.name}"
+
+
 class Tag(models.Model):
-    """Tag for categorizing artwork"""
+    """Tag for freeform artwork categorization by users"""
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(unique=True, blank=True)
 
@@ -27,6 +47,13 @@ class Artwork(models.Model):
     )
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='artworks'
+    )
     # URL-based image (for Supabase storage)
     image = models.URLField(max_length=1000, blank=True)
     # Local file-based image (for local development)
@@ -46,4 +73,3 @@ class Artwork(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.artist.username}"
-

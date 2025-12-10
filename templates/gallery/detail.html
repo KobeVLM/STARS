@@ -58,24 +58,28 @@
             </div>
             {% endif %}
             
-            <!-- Owner Actions -->
-            {% if is_owner %}
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px;">
+            <!-- Action Buttons -->
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; flex-wrap: wrap;">
+                <!-- Share Button (all users) -->
+                <button type="button" onclick="shareArtwork()" class="btn btn-outline" style="padding: 10px 20px;">
+                    🔗 Share
+                </button>
+                
+                {% if is_owner %}
+                <!-- Owner Actions -->
                 <a href="{% url 'edit_artwork' pk=artwork.id %}" class="btn btn-outline" style="padding: 10px 20px;">
                     ✏️ Edit
                 </a>
                 <a href="{% url 'delete_artwork' pk=artwork.id %}" class="btn btn-danger" style="padding: 10px 20px;">
                     🗑️ Delete
                 </a>
-            </div>
-            {% elif user.is_authenticated %}
-            <!-- Report Button (non-owners only) -->
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-                <a href="{% url 'report_artwork' artwork_id=artwork.id %}" class="btn btn-outline" style="padding: 8px 16px; color: var(--text-light); border-color: var(--text-light);">
+                {% elif user.is_authenticated %}
+                <!-- Report Button (non-owners only) -->
+                <a href="{% url 'report_artwork' artwork_id=artwork.id %}" class="btn btn-outline" style="padding: 10px 20px; color: var(--text-light); border-color: var(--text-light);">
                     🚩 Report
                 </a>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </div>
     
@@ -145,4 +149,58 @@
         <a href="{% url 'feed' %}" class="btn btn-outline">← Back to Gallery</a>
     </div>
 </div>
+
+<!-- Share Modal -->
+<div id="shareModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--card-bg); border-radius: 16px; padding: 30px; max-width: 450px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+        <h3 style="margin-bottom: 20px; color: var(--text-dark);">🔗 Share This Artwork</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <input type="text" id="shareUrl" readonly style="flex: 1; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--input-text); font-size: 0.9rem;">
+            <button onclick="copyLink()" class="btn btn-primary" style="padding: 12px 20px;">
+                📋 Copy
+            </button>
+        </div>
+        <button onclick="closeShareModal()" class="btn btn-outline" style="padding: 10px 30px;">
+            Close
+        </button>
+    </div>
+</div>
+
+<script>
+function shareArtwork() {
+    const modal = document.getElementById('shareModal');
+    const urlInput = document.getElementById('shareUrl');
+    urlInput.value = window.location.href;
+    modal.style.display = 'flex';
+}
+
+function closeShareModal() {
+    document.getElementById('shareModal').style.display = 'none';
+}
+
+function copyLink() {
+    const urlInput = document.getElementById('shareUrl');
+    urlInput.select();
+    urlInput.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(urlInput.value).then(() => {
+        // Show toast
+        const toast = document.createElement('div');
+        toast.textContent = '✓ Link copied to clipboard!';
+        toast.style.cssText = 'position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 8px; z-index: 1001; font-weight: 600;';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+        closeShareModal();
+    });
+}
+
+// Close modal on outside click
+document.getElementById('shareModal').addEventListener('click', function(e) {
+    if (e.target === this) closeShareModal();
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeShareModal();
+});
+</script>
 {% endblock %}

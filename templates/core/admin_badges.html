@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Badges - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .badge-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 15px;
+    }
+    
+    .badge-icon {
+        font-size: 2.5rem;
+        margin-right: 15px;
+    }
+    
+    .badge-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .badge-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        font-size: 0.85rem;
+        color: var(--text-light);
+        margin-top: 10px;
+    }
+    
+    .badge-meta span {
+        background: var(--stat-bg);
+        padding: 4px 10px;
+        border-radius: 6px;
+    }
+    
+    .badge-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .create-form {
+        background: var(--stat-bg);
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .form-group input, .form-group select, .form-group textarea {
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--input-bg);
+        color: var(--input-text);
+        font-size: 1rem;
+    }
+    
+    .criteria-label {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+    }
+    
+    .users-count {
+        color: var(--success);
+    }
+    
+    /* Edit Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 30px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h1>🏆 Manage Badges</h1>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">← Back to Dashboard</a>
+</div>
+
+<!-- Messages -->
+{% if messages %}
+<div style="margin-bottom: 20px;">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}info{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Create New Badge Form -->
+<div class="create-form">
+    <h3 style="margin-bottom: 20px;">➕ Create New Badge</h3>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create">
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Icon (Emoji)</label>
+                <input type="text" name="icon" value="🏆" maxlength="10" style="width: 80px;">
+            </div>
+            <div class="form-group" style="flex: 2;">
+                <label>Name *</label>
+                <input type="text" name="name" placeholder="e.g., First Upload" required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+                <label>Description *</label>
+                <textarea name="description" rows="2" placeholder="e.g., Upload your first artwork" required></textarea>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Criteria Type *</label>
+                <select name="criteria_type" required>
+                    {% for value, label in criteria_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Threshold Value *</label>
+                <input type="number" name="criteria_value" min="1" value="1" required>
+            </div>
+            <div class="form-group">
+                <label>XP Reward</label>
+                <input type="number" name="xp_reward" min="0" value="50">
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Create Badge</button>
+    </form>
+</div>
+
+<!-- Existing Badges -->
+<h3 style="margin-bottom: 20px;">Existing Badges ({{ badges|length }})</h3>
+
+{% if badges %}
+<div>
+    {% for badge in badges %}
+    <div class="badge-card">
+        <div class="badge-header">
+            <span class="badge-icon">{{ badge.icon }}</span>
+            <div>
+                <h3 style="margin: 0;">{{ badge.name }}</h3>
+                <p style="margin: 5px 0 0; color: var(--text-light);">{{ badge.description }}</p>
+            </div>
+        </div>
+        <div class="badge-meta">
+            <span class="criteria-label">{{ badge.get_criteria_type_display }} ≥ {{ badge.criteria_value }}</span>
+            <span>+{{ badge.xp_reward }} XP</span>
+            <span class="users-count">{{ badge.users_count }} user{{ badge.users_count|pluralize }} earned</span>
+        </div>
+        <div class="badge-actions">
+            <button type="button" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem;" onclick="openEditModal({{ badge.id }}, '{{ badge.name|escapejs }}', '{{ badge.description|escapejs }}', '{{ badge.icon }}', '{{ badge.criteria_type }}', {{ badge.criteria_value }}, {{ badge.xp_reward }})">
+                ✏️ Edit
+            </button>
+            <form action="{% url 'admin_badge_action' badge_id=badge.id %}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this badge? Users who earned it will lose it.');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete">
+                <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.85rem;">
+                    🗑️ Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style="text-align: center; padding: 60px 20px; background: var(--card-bg); border-radius: 12px;">
+    <p style="color: var(--text-light);">No badges created yet. Create your first badge above!</p>
+</div>
+{% endif %}
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 20px;">✏️ Edit Badge</h3>
+        <form id="editForm" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update">
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Icon (Emoji)</label>
+                <input type="text" name="icon" id="edit_icon" maxlength="10" style="width: 80px;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Name</label>
+                <input type="text" name="name" id="edit_name" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Description</label>
+                <textarea name="description" id="edit_description" rows="2" required></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Criteria Type</label>
+                    <select name="criteria_type" id="edit_criteria_type" required>
+                        {% for value, label in criteria_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Threshold</label>
+                    <input type="number" name="criteria_value" id="edit_criteria_value" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>XP Reward</label>
+                    <input type="number" name="xp_reward" id="edit_xp_reward" min="0">
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditModal(id, name, description, icon, criteriaType, criteriaValue, xpReward) {
+    document.getElementById('editForm').action = '/admin-panel/badges/' + id + '/';
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_description').value = description;
+    document.getElementById('edit_icon').value = icon;
+    document.getElementById('edit_criteria_type').value = criteriaType;
+    document.getElementById('edit_criteria_value').value = criteriaValue;
+    document.getElementById('edit_xp_reward').value = xpReward;
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+// Close modal on outside click
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+});
+
+// Close on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeEditModal();
+});
+</script>
+{% endblock %}

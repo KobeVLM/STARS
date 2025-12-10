@@ -2,12 +2,29 @@
 {% load static %}
 
 {% block content %}
-<!-- Tag Filters -->
-<div class="flex-row" style="margin-bottom: 30px; overflow-x: auto; padding-bottom: 10px; flex-wrap: wrap;">
-    <a href="{% url 'feed' %}" class="tag-pill {% if not current_tag %}active{% endif %}">All Posts</a>
-    {% for tag in tags %}
-        <a href="?tag={{ tag.slug }}" class="tag-pill {% if current_tag == tag.slug %}active{% endif %}">{{ tag.name }}</a>
-    {% endfor %}
+<!-- Category Filter Tabs -->
+<div style="margin-bottom: 25px;">
+    <div class="flex-row" style="gap: 10px; flex-wrap: wrap;">
+        <a href="{% url 'feed' %}" class="btn {% if not current_category %}btn-primary{% else %}btn-outline{% endif %}" style="padding: 10px 20px;">
+            🎨 All
+        </a>
+        {% for category in categories %}
+        <a href="?category={{ category.slug }}" class="btn {% if current_category == category.slug %}btn-primary{% else %}btn-outline{% endif %}" style="padding: 10px 20px;">
+            {{ category.icon }} {{ category.name }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div style="margin-bottom: 25px;">
+    <form method="GET" action="{% url 'feed' %}" style="display: flex; gap: 10px; max-width: 500px;">
+        {% if current_category %}
+        <input type="hidden" name="category" value="{{ current_category }}">
+        {% endif %}
+        <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="Search by title, artist, or tags..." class="form-input" style="flex: 1;">
+        <button type="submit" class="btn btn-primary">🔍</button>
+    </form>
 </div>
 
 <!-- Artwork Grid -->
@@ -22,15 +39,24 @@
             <h3 class="card-title">{{ art.title }}</h3>
             <small class="card-meta">by <a href="{% url 'profile' username=art.artist.username %}" style="color: var(--primary); text-decoration: none;">{{ art.artist.username }}</a></small>
             
+            <!-- Category Badge -->
+            {% if art.category %}
+            <div style="margin-top: 8px;">
+                <span style="background: var(--accent-light); color: var(--primary); padding: 3px 10px; border-radius: 12px; font-size: 0.75rem;">
+                    {{ art.category.icon }} {{ art.category.name }}
+                </span>
+            </div>
+            {% endif %}
+            
             <div class="flex-between" style="margin-top: 15px;">
                 <div class="tags">
-                    {% for tag in art.tags.all|slice:":3" %}
+                    {% for tag in art.tags.all|slice:":2" %}
                         <a href="?tag={{ tag.slug }}" class="tag-pill" style="font-size: 0.75rem; padding: 2px 8px;">#{{ tag.name }}</a>
                     {% endfor %}
                 </div>
                 <!-- Like Count -->
                 <div class="flex-row" style="gap: 5px;">
-                    <span style="color: #ff7675;">♥</span> 
+                    <span style="color: var(--danger);">♥</span> 
                     <span>{{ art.likes.count }}</span>
                 </div>
             </div>
@@ -45,3 +71,4 @@
 </div>
 {% endif %}
 {% endblock %}
+
