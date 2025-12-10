@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', 'stars-n0np.onrender.com,*.render.com,*.onrender.com,127.0.0.1,localhost').split(',')]
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', 'CSIT327-G6-StARS.onrender.com,*.render.com,*.onrender.com,127.0.0.1,localhost').split(',')]
 
 
 # Application definition
