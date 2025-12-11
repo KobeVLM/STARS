@@ -227,30 +227,288 @@
 </div>
 {% endif %}
 
-<!-- Trending Artworks -->
+<!-- Trending Artworks Carousel -->
 {% if trending_artworks %}
 <div style="margin-bottom: 30px;">
     <div class="section-title">
         <span>🔥 Trending Artworks</span>
         <a href="{% url 'feed' %}" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">See all →</a>
     </div>
-    <div class="grid-3">
-        {% for art in trending_artworks %}
-        <div class="card">
-            <a href="{% url 'detail' pk=art.id %}">
-                <img src="{{ art.get_image_url }}" alt="{{ art.title }}">
-            </a>
-            <div class="card-content">
-                <h3 class="card-title">{{ art.title }}</h3>
-                <small class="card-meta">by <a href="{% url 'profile' username=art.artist.username %}" style="color: var(--primary); text-decoration: none;">{{ art.artist.username }}</a></small>
-                <div style="margin-top: 10px; color: #ff7675;">
-                    ♥ {{ art.like_count }}
+    
+    <!-- Carousel Container -->
+    <div class="trending-carousel-wrapper">
+        <button class="carousel-btn carousel-prev" onclick="slideTrending(-1)">❮</button>
+        
+        <div class="trending-carousel" id="trendingCarousel">
+            <div class="carousel-track" id="carouselTrack">
+                {% for art in trending_artworks %}
+                <div class="carousel-card">
+                    <a href="{% url 'detail' pk=art.id %}">
+                        <div class="carousel-img-container">
+                            <img src="{{ art.get_image_url }}" alt="{{ art.title }}">
+                            <div class="carousel-overlay">
+                                <span class="like-badge">♥ {{ art.like_count }}</span>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="carousel-card-content">
+                        <h3 class="card-title">{{ art.title }}</h3>
+                        <small class="card-meta">by <a href="{% url 'profile' username=art.artist.username %}" style="color: var(--primary); text-decoration: none;">{{ art.artist.username }}</a></small>
+                    </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
-        {% endfor %}
+        
+        <button class="carousel-btn carousel-next" onclick="slideTrending(1)">❯</button>
     </div>
+    
+    <!-- Carousel Dots -->
+    <div class="carousel-dots" id="carouselDots"></div>
 </div>
+
+<style>
+    .trending-carousel-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .trending-carousel {
+        overflow: hidden;
+        border-radius: var(--border-radius);
+        flex: 1;
+    }
+    
+    .carousel-track {
+        display: flex;
+        gap: 20px;
+        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        padding: 10px 0;
+    }
+    
+    .carousel-card {
+        min-width: calc(33.333% - 14px);
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        flex-shrink: 0;
+    }
+    
+    .carousel-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+    
+    .carousel-img-container {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+    
+    .carousel-img-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    
+    .carousel-card:hover .carousel-img-container img {
+        transform: scale(1.05);
+    }
+    
+    .carousel-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 15px;
+        background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .carousel-card:hover .carousel-overlay {
+        opacity: 1;
+    }
+    
+    .like-badge {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .carousel-card-content {
+        padding: 15px;
+    }
+    
+    .carousel-btn {
+        background: var(--card-bg);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-dark);
+        z-index: 10;
+        flex-shrink: 0;
+    }
+    
+    .carousel-btn:hover {
+        background: var(--primary);
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 15px;
+    }
+    
+    .carousel-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ddd;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .carousel-dot.active {
+        background: var(--primary);
+        transform: scale(1.2);
+    }
+    
+    .carousel-dot:hover {
+        background: var(--primary);
+    }
+    
+    @media (max-width: 768px) {
+        .carousel-card {
+            min-width: calc(50% - 10px);
+        }
+        .carousel-btn {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .carousel-card {
+            min-width: 100%;
+        }
+    }
+</style>
+
+<script>
+(function() {
+    const track = document.getElementById('carouselTrack');
+    const carousel = document.getElementById('trendingCarousel');
+    const dotsContainer = document.getElementById('carouselDots');
+    const cards = track.querySelectorAll('.carousel-card');
+    const totalCards = cards.length;
+    
+    let currentIndex = 0;
+    let autoSlideInterval;
+    let cardsPerView = 3;
+    
+    // Determine cards per view based on screen size
+    function updateCardsPerView() {
+        if (window.innerWidth <= 480) cardsPerView = 1;
+        else if (window.innerWidth <= 768) cardsPerView = 2;
+        else cardsPerView = 3;
+    }
+    
+    updateCardsPerView();
+    window.addEventListener('resize', () => {
+        updateCardsPerView();
+        updateCarousel();
+        createDots();
+    });
+    
+    const maxIndex = Math.max(0, totalCards - cardsPerView);
+    
+    // Create dots
+    function createDots() {
+        dotsContainer.innerHTML = '';
+        const numDots = Math.ceil(totalCards / cardsPerView);
+        for (let i = 0; i < numDots; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+            dot.onclick = () => goToSlide(i * cardsPerView);
+            dotsContainer.appendChild(dot);
+        }
+    }
+    
+    function updateDots() {
+        const dots = dotsContainer.querySelectorAll('.carousel-dot');
+        const activeDotIndex = Math.floor(currentIndex / cardsPerView);
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === activeDotIndex);
+        });
+    }
+    
+    function updateCarousel() {
+        const cardWidth = cards[0]?.offsetWidth || 0;
+        const gap = 20;
+        const offset = currentIndex * (cardWidth + gap);
+        track.style.transform = `translateX(-${offset}px)`;
+        updateDots();
+    }
+    
+    window.slideTrending = function(direction) {
+        const maxIdx = Math.max(0, totalCards - cardsPerView);
+        currentIndex += direction;
+        if (currentIndex < 0) currentIndex = maxIdx;
+        if (currentIndex > maxIdx) currentIndex = 0;
+        updateCarousel();
+        resetAutoSlide();
+    };
+    
+    function goToSlide(index) {
+        const maxIdx = Math.max(0, totalCards - cardsPerView);
+        currentIndex = Math.min(index, maxIdx);
+        updateCarousel();
+        resetAutoSlide();
+    }
+    
+    function autoSlide() {
+        window.slideTrending(1);
+    }
+    
+    function startAutoSlide() {
+        autoSlideInterval = setInterval(autoSlide, 4000);
+    }
+    
+    function resetAutoSlide() {
+        clearInterval(autoSlideInterval);
+        startAutoSlide();
+    }
+    
+    // Pause on hover
+    carousel.addEventListener('mouseenter', () => clearInterval(autoSlideInterval));
+    carousel.addEventListener('mouseleave', startAutoSlide);
+    
+    // Initialize
+    createDots();
+    startAutoSlide();
+})();
+</script>
 {% endif %}
 
 <!-- User's Recent Artworks -->

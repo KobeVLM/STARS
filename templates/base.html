@@ -179,11 +179,22 @@
                 </div>
             </div>
             <script>
-                // Calculate XP progress within current level (0-100)
+                // Calculate XP progress within current level using correct formula
+                // Level = sqrt(total_xp / 100) + 1
+                // XP for level N = (N-1)² × 100
                 const navXpBar = document.getElementById('navXpBar');
                 const totalXp = parseInt(navXpBar.dataset.xp);
-                const xpInLevel = totalXp % 100;
-                navXpBar.style.width = xpInLevel + '%';
+                const currentLevel = {{ user.level }};
+                
+                // Calculate XP thresholds for current and next level
+                const xpForCurrentLevel = Math.pow(currentLevel - 1, 2) * 100;
+                const xpForNextLevel = Math.pow(currentLevel, 2) * 100;
+                const xpNeeded = xpForNextLevel - xpForCurrentLevel;
+                const xpProgress = totalXp - xpForCurrentLevel;
+                
+                // Calculate percentage (capped between 0-100)
+                const percentage = xpNeeded > 0 ? Math.min(100, Math.max(0, (xpProgress / xpNeeded) * 100)) : 0;
+                navXpBar.style.width = percentage + '%';
             </script>
             <a href="{% url 'profile' username=user.username %}">
                 {% if user.avatar %}

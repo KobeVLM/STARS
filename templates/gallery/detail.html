@@ -14,9 +14,9 @@
                     <div class="flex-row">
                         <a href="{% url 'profile' username=artwork.artist.username %}">
                             {% if artwork.artist.avatar %}
-                                <img src="{{ artwork.artist.avatar.url }}" class="avatar" alt="{{ artwork.artist.username }}">
+                                <img src="{{ artwork.artist.avatar.url }}" alt="{{ artwork.artist.username }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                             {% else %}
-                                <img src="{% static 'images/default-avatar.png' %}" class="avatar" alt="{{ artwork.artist.username }}">
+                                <img src="{% static 'images/default-avatar.png' %}" alt="{{ artwork.artist.username }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                             {% endif %}
                         </a>
                         <div>
