@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Comment Flags - Admin - STARS{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+            <h1>Comment Flags</h1>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">← Back to Dashboard</a>
+    </div>
+
+    <!-- Flags List -->
+    <div class="card" style="padding: 30px;">
+        {% if flags %}
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for flag in flags %}
+            <div style="padding: 20px; background: var(--stat-bg); border-radius: 12px; border-left: 4px solid var(--warning);">
+                <div style="display: flex; gap: 20px;">
+                    <!-- Flag Details -->
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3 style="margin: 0 0 5px 0;">
+                                    Comment by <a href="{% url 'profile' username=flag.comment.user.username %}" style="color: var(--primary);">{{ flag.comment.user.username }}</a>
+                                </h3>
+                                <p style="color: var(--text-light); margin: 0 0 10px 0;">
+                                    On artwork: <a href="{% url 'detail' pk=flag.comment.artwork.id %}" style="color: var(--primary);">{{ flag.comment.artwork.title }}</a>
+                                </p>
+                            </div>
+                            <span style="color: var(--text-light); font-size: 0.85rem;">
+                                Flagged by {{ flag.flagged_by.username }} • {{ flag.created_at|timesince }} ago
+                            </span>
+                        </div>
+                        
+                        <!-- Comment Content -->
+                        <div style="margin-top: 10px; padding: 15px; background: rgba(0,0,0,0.05); border-radius: 8px; border: 1px solid var(--border);">
+                            <p style="margin: 0; font-size: 0.95rem; color: var(--text-dark);">
+                                "{{ flag.comment.content }}"
+                            </p>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <form method="POST" action="{% url 'admin_flag_action' flag_id=flag.id %}" style="display: inline;"
+                                  onsubmit="return confirm('Are you sure you want to dismiss this flag? The comment will remain intact.');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="dismiss">
+                                <button type="submit" class="btn btn-outline" style="padding: 6px 15px; font-size: 0.85rem;">
+                                    ✓ Dismiss Flag
+                                </button>
+                            </form>
+                            
+                            <form method="POST" action="{% url 'admin_flag_action' flag_id=flag.id %}" style="display: inline;"
+                                  onsubmit="return confirm('Are you sure you want to DELETE this comment? This will remove the comment and all its flags.');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_comment">
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 15px; font-size: 0.85rem;">
+                                    🗑️ Delete Comment
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px; color: var(--text-light);">
+            <p style="font-size: 3rem; margin-bottom: 15px;">⚠️</p>
+            <p>No comment flags to show.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

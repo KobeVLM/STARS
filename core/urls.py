@@ -17,6 +17,10 @@ urlpatterns = [
     path('admin-panel/reports/<int:report_id>/', admin_views.admin_report_action, name='admin_report_action'),
     path('admin-panel/badges/', admin_views.admin_badges, name='admin_badges'),
     path('admin-panel/badges/<int:badge_id>/', admin_views.admin_badge_action, name='admin_badge_action'),
+    path('admin-panel/disputes/', admin_views.admin_disputes, name='admin_disputes'),
+    path('admin-panel/disputes/<int:appeal_id>/', admin_views.admin_dispute_action, name='admin_dispute_action'),
+    path('admin-panel/flags/', admin_views.admin_flags, name='admin_flags'),
+    path('admin-panel/flags/<int:flag_id>/', admin_views.admin_flag_action, name='admin_flag_action'),
 ]
 
 

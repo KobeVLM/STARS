@@ -4,9 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
 from django.utils import timezone
-from users.models import CustomUser, Badge
+from users.models import CustomUser, Badge, SuspensionAppeal, Notification
 from gallery.models import Artwork
-from interactions.models import Like, Comment, Report
+from interactions.models import Like, Comment, Report, CommentFlag
 
 
 @staff_member_required
@@ -27,10 +27,16 @@ def admin_dashboard(request):
     # Top users by XP
     top_users = CustomUser.objects.order_by('-xp')[:5]
     
+    # Pending appeals and flags count
+    pending_appeals_count = SuspensionAppeal.objects.filter(status='pending').count()
+    flags_count = CommentFlag.objects.count()
+
     context = {
         'stats': stats,
         'recent_users': recent_users,
         'top_users': top_users,
+        'pending_appeals_count': pending_appeals_count,
+        'flags_count': flags_count,
     }
     return render(request, 'core/admin_dashboard.html', context)
 
@@ -284,3 +290,97 @@ def admin_badge_action(request, badge_id):
             return redirect('admin_badges')
     
     return redirect('admin_badges')
+
+
+@staff_member_required
+def admin_disputes(request):
+    """Admin view for suspension appeals"""
+    status_filter = request.GET.get('status', 'pending')
+    
+    appeals = SuspensionAppeal.objects.select_related('user')
+    
+    if status_filter == 'pending':
+        appeals = appeals.filter(status='pending')
+    elif status_filter == 'approved':
+        appeals = appeals.filter(status='approved')
+    elif status_filter == 'denied':
+        appeals = appeals.filter(status='denied')
+        
+    pending_count = SuspensionAppeal.objects.filter(status='pending').count()
+    
+    context = {
+        'appeals': appeals,
+        'status_filter': status_filter,
+        'pending_count': pending_count,
+    }
+    return render(request, 'core/admin_disputes.html', context)
+
+
+@staff_member_required
+def admin_dispute_action(request, appeal_id):
+    """Handle admin action on a dispute"""
+    appeal = get_object_or_404(SuspensionAppeal, pk=appeal_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'approve':
+            appeal.status = 'approved'
+            appeal.save()
+            # Lift the user's suspension
+            appeal.user.suspension_end_date = None
+            appeal.user.save()
+            
+            # Send Notification
+            Notification.objects.create(
+                user=appeal.user,
+                message="Your suspension appeal has been approved! Your commenting privileges have been restored."
+            )
+            messages.success(request, f'Appeal approved for {appeal.user.username}.')
+            
+        elif action == 'deny':
+            appeal.status = 'denied'
+            appeal.save()
+            
+            # Send Notification
+            Notification.objects.create(
+                user=appeal.user,
+                message="Your suspension appeal has been denied by the moderation team."
+            )
+            messages.warning(request, f'Appeal denied for {appeal.user.username}.')
+            
+    return redirect('admin_disputes')
+
+
+@staff_member_required
+def admin_flags(request):
+    """Admin view for comment flags"""
+    # Get all flags with their related comments and users
+    flags = CommentFlag.objects.select_related('comment', 'comment__user', 'flagged_by')
+    
+    context = {
+        'flags': flags,
+    }
+    return render(request, 'core/admin_flags.html', context)
+
+
+@staff_member_required
+def admin_flag_action(request, flag_id):
+    """Handle admin action on a comment flag"""
+    flag = get_object_or_404(CommentFlag, pk=flag_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'dismiss':
+            flag.delete()
+            messages.success(request, 'Flag has been dismissed.')
+            
+        elif action == 'delete_comment':
+            # Delete the offending comment (this will cascade delete the flag)
+            comment_content = flag.comment.content
+            comment_author = flag.comment.user.username
+            flag.comment.delete()
+            messages.success(request, f'Comment by {comment_author} has been deleted.')
+            
+    return redirect('admin_flags')

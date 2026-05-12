@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Disputes - Admin - STARS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .status-pending {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+    
+    .status-approved {
+        background: var(--success-light);
+        color: var(--success);
+    }
+    
+    .status-denied {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+            <h1>Suspension Appeals</h1>
+            {% if pending_count > 0 %}
+            <span style="background: var(--danger); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; margin-left: 10px;">
+                {{ pending_count }} pending
+            </span>
+            {% endif %}
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">← Back to Dashboard</a>
+    </div>
+
+    <!-- Status Filter Tabs -->
+    <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+        <a href="?status=pending" class="btn {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline{% endif %}">
+            Pending
+        </a>
+        <a href="?status=approved" class="btn {% if status_filter == 'approved' %}btn-primary{% else %}btn-outline{% endif %}">
+            Approved
+        </a>
+        <a href="?status=denied" class="btn {% if status_filter == 'denied' %}btn-primary{% else %}btn-outline{% endif %}">
+            Denied
+        </a>
+        <a href="?status=all" class="btn {% if status_filter == 'all' %}btn-primary{% else %}btn-outline{% endif %}">
+            All
+        </a>
+    </div>
+
+    <!-- Appeals List -->
+    <div class="card" style="padding: 30px;">
+        {% if appeals %}
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for appeal in appeals %}
+            <div style="padding: 20px; background: var(--stat-bg); border-radius: 12px; border-left: 4px solid {% if appeal.status == 'pending' %}var(--warning){% elif appeal.status == 'approved' %}var(--success){% else %}var(--danger){% endif %};">
+                <div style="display: flex; gap: 20px;">
+                    <!-- Appeal Details -->
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3 style="margin: 0 0 5px 0;">
+                                    Appeal by <a href="{% url 'profile' username=appeal.user.username %}" style="color: var(--primary);">{{ appeal.user.username }}</a>
+                                </h3>
+                                <p style="color: var(--text-light); margin: 0 0 10px 0;">
+                                    Submitted {{ appeal.created_at|timesince }} ago
+                                </p>
+                            </div>
+                            <span class="status-badge status-{{ appeal.status }}">
+                                {{ appeal.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        <!-- Reason -->
+                        <div style="margin-top: 10px; padding: 15px; background: rgba(0,0,0,0.05); border-radius: 8px;">
+                            <strong style="color: var(--text-dark);">Appeal Reason:</strong>
+                            <p style="margin: 5px 0 0 0; font-size: 0.95rem; color: var(--text-dark);">
+                                "{{ appeal.reason }}"
+                            </p>
+                        </div>
+                        
+                        <!-- Actions -->
+                        {% if appeal.status == 'pending' %}
+                        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <form method="POST" action="{% url 'admin_dispute_action' appeal_id=appeal.id %}" style="display: inline;"
+                                  onsubmit="return confirm('Are you sure you want to approve this appeal and lift their suspension?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="btn btn-success" style="padding: 6px 15px; font-size: 0.85rem;">
+                                    ✓ Approve & Lift Suspension
+                                </button>
+                            </form>
+                            
+                            <form method="POST" action="{% url 'admin_dispute_action' appeal_id=appeal.id %}" style="display: inline;"
+                                  onsubmit="return confirm('Are you sure you want to deny this appeal?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="deny">
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 15px; font-size: 0.85rem;">
+                                    ✗ Deny Appeal
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px; color: var(--text-light);">
+            <p style="font-size: 3rem; margin-bottom: 15px;">⚖️</p>
+            <p>No appeals to show.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
