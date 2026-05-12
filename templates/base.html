@@ -221,6 +221,19 @@
             </button>
         </div>
     </nav>
+    
+    {% if user.is_authenticated %}
+        {% for notification in user.notifications.all %}
+            {% if not notification.is_read %}
+            <div style="background: rgba(255, 118, 117, 0.1); border-bottom: 1px solid #ff7675; padding: 15px 40px; text-align: center; color: #d63031;">
+                <strong>Notice:</strong> {{ notification.message }}
+                {% if notification.action_link %}
+                    <a href="{{ notification.action_link }}" style="margin-left: 15px; color: #d63031; text-decoration: underline; font-weight: bold;">{{ notification.action_text }}</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
     <main class="container">
         {% block content %}{% endblock %}

@@ -12,6 +12,10 @@ class CustomUser(AbstractUser):
     # Gamification
     xp = models.IntegerField(default=0)
     level = models.IntegerField(default=1)
+    mentor_points = models.IntegerField(default=0)
+    
+    # Moderation
+    suspension_end_date = models.DateTimeField(null=True, blank=True)
     
     # Daily Streak
     last_login_date = models.DateField(null=True, blank=True)
@@ -154,4 +158,46 @@ class UserBadge(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.badge.name}"
+
+
+class Notification(models.Model):
+    """Simple notification system for users"""
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='notifications'
+    )
+    message = models.TextField()
+    action_link = models.CharField(max_length=255, blank=True, help_text="Optional URL for CTA button")
+    action_text = models.CharField(max_length=50, blank=True, help_text="Text for CTA button")
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"Notification for {self.user.username}"
+
+
+class SuspensionAppeal(models.Model):
+    """Tracks appeals made by suspended users"""
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='appeals'
+    )
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved - Suspension Lifted'),
+        ('denied', 'Denied')
+    ], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"Appeal from {self.user.username}"
 

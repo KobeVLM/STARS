@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load markdown_extras %}
 
 {% block content %}
 <div style="max-width: 900px; margin: 0 auto;">
@@ -91,12 +92,13 @@
             
             <!-- Comment Form -->
             {% if user.is_authenticated %}
-            <form action="{% url 'add_comment' artwork_id=artwork.id %}" method="POST" style="margin-bottom: 30px;">
+            <form action="{% url 'add_comment' artwork_id=artwork.id %}" method="POST" style="margin-bottom: 30px;" id="commentForm">
                 {% csrf_token %}
-                <div class="form-group">
+                <div class="form-group" style="position: relative;">
                     {{ comment_form.content }}
+                    <div id="charCount" style="position: absolute; bottom: 10px; right: 10px; font-size: 0.85rem; color: var(--text-light);">0 / 500</div>
                 </div>
-                <button type="submit" class="btn btn-primary">Post Comment</button>
+                <button type="submit" class="btn btn-primary" id="submitComment">Post Comment</button>
             </form>
             {% else %}
             <p style="color: var(--text-light); margin-bottom: 30px;">
@@ -124,10 +126,14 @@
                                 </a>
                                 <div class="level-badge" style="display: inline-block; margin-left: 8px; font-size: 0.75rem;">Lvl {{ comment.user.level }}</div>
                                 <br>
-                                <small style="color: var(--text-light);">{{ comment.created_at|timesince }} ago</small>
-                            </div>
+                            <small style="color: var(--text-light);">{{ comment.created_at|timesince }} ago</small>
+                            {% if comment.is_pinned %}
+                            <span class="tag-pill" style="margin-left: 10px; background: rgba(255, 193, 7, 0.2); color: #ff9800; font-size: 0.75rem; padding: 2px 8px;">📌 Pinned by Artist</span>
+                            {% endif %}
                         </div>
-                        
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; align-items: center;">
                         <!-- Delete button for comment owner -->
                         {% if user == comment.user %}
                         <form action="{% url 'delete_comment' comment_id=comment.id %}" method="POST" style="margin: 0;">
@@ -135,8 +141,29 @@
                             <button type="submit" class="btn-outline" style="padding: 4px 12px; font-size: 0.85rem; border-color: #ff7675; color: #ff7675;" onclick="return confirm('Delete this comment?')">Delete</button>
                         </form>
                         {% endif %}
+                        
+                        <!-- Pin button for artwork owner -->
+                        {% if user == artwork.artist %}
+                        <form action="{% url 'pin_comment' comment_id=comment.id %}" method="POST" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-outline" style="padding: 4px 12px; font-size: 0.85rem; border-color: #f39c12; color: #f39c12;">
+                                {% if comment.is_pinned %}Unpin{% else %}Pin{% endif %}
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        <!-- Report button for non-owners -->
+                        {% if user.is_authenticated and user != comment.user %}
+                        <form action="{% url 'report_comment' comment_id=comment.id %}" method="POST" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-outline" style="padding: 4px 12px; font-size: 0.85rem; border-color: #ccc; color: #888;" onclick="return confirm('Report this comment to moderators?')">Report</button>
+                        </form>
+                        {% endif %}
                     </div>
-                    <p style="margin-left: 47px; line-height: 1.6;">{{ comment.content }}</p>
+                </div>
+                <div class="comment-body" style="margin-left: 47px; line-height: 1.6;">
+                    {{ comment.content|markdown }}
+                </div>
                 </div>
                 {% endfor %}
             </div>
@@ -204,8 +231,16 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeShareModal();
 });
 
-// Toggle Like AJAX
+// Toggle Like AJAX with Debounce
+let isLiking = false;
 function toggleLikeDetail(artworkId, btn) {
+    if (isLiking) return; // Debounce 
+    isLiking = true;
+    
+    // Disable temporarily
+    btn.style.opacity = '0.5';
+    btn.style.pointerEvents = 'none';
+    
     fetch(`/interactions/like/${artworkId}/`, {
         method: 'POST',
         headers: {
@@ -228,9 +263,52 @@ function toggleLikeDetail(artworkId, btn) {
             btn.title = 'Like';
         }
         count.textContent = data.like_count;
+        
+        // Re-enable after 2 seconds
+        setTimeout(() => {
+            isLiking = false;
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+        }, 2000);
     })
-    .catch(err => console.error('Like failed:', err));
+    .catch(err => {
+        console.error('Like failed:', err);
+        isLiking = false;
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+    });
 }
+
+// Comment Character Limit Logic
+document.addEventListener('DOMContentLoaded', function() {
+    const commentInput = document.querySelector('textarea[name="content"]');
+    if (commentInput) {
+        const charCount = document.getElementById('charCount');
+        const submitBtn = document.getElementById('submitComment');
+        const MAX_CHARS = 500;
+        const WARN_CHARS = 480;
+        
+        commentInput.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            
+            // Hard stop at 500
+            if (currentLength > MAX_CHARS) {
+                this.value = this.value.substring(0, MAX_CHARS);
+            }
+            
+            const finalLength = this.value.length;
+            charCount.textContent = `${finalLength} / ${MAX_CHARS}`;
+            
+            if (finalLength >= WARN_CHARS) {
+                charCount.style.color = '#ff7675';
+                charCount.style.fontWeight = 'bold';
+            } else {
+                charCount.style.color = 'var(--text-light)';
+                charCount.style.fontWeight = 'normal';
+            }
+        });
+    }
+});
 </script>
 
 <style>

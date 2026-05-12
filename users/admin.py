@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, Badge, UserBadge
+from .models import CustomUser, Badge, UserBadge, Notification, SuspensionAppeal
 
 
 @admin.register(CustomUser)
@@ -23,3 +23,17 @@ class UserBadgeAdmin(admin.ModelAdmin):
     list_filter = ('earned_at', 'badge')
     search_fields = ('user__username', 'badge__name')
     readonly_fields = ('earned_at',)
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'message', 'created_at', 'is_read')
+    list_filter = ('is_read', 'created_at')
+    search_fields = ('user__username', 'message')
+
+
+@admin.register(SuspensionAppeal)
+class SuspensionAppealAdmin(admin.ModelAdmin):
+    list_display = ('user', 'created_at', 'status')
+    list_filter = ('status', 'created_at')
+    search_fields = ('user__username', 'reason', 'admin_notes')

@@ -38,6 +38,7 @@ class Comment(models.Model):
     content = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)  # Track if artwork owner has seen this
+    is_pinned = models.BooleanField(default=False) # Track if the artwork owner pinned this
 
     class Meta:
         ordering = ['-created_at']
@@ -95,3 +96,24 @@ class Report(models.Model):
 
     def __str__(self):
         return f"Report on {self.artwork.title} by {self.reporter.username}"
+
+
+class CommentFlag(models.Model):
+    """Tracks community flags on comments"""
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        related_name='flags'
+    )
+    flagged_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='comment_flags_given'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('comment', 'flagged_by')
+        
+    def __str__(self):
+        return f"Flag by {self.flagged_by.username} on comment {self.comment.id}"
